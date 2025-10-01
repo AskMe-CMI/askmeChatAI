@@ -1,0 +1,116 @@
+# Dependencies
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Production builds (will be rebuilt in Docker)
+.next
+out
+dist
+
+# Environment variables (use docker run -e or --env-file)
+# .env
+.env.local
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+.env.production.example
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage
+*.lcov
+.nyc_output
+
+# Dependency directories
+jspm_packages/
+
+# Cache directories
+.npm
+.cache
+.parcel-cache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Temporary folders
+tmp/
+temp/
+
+# Editor directories and files
+.vscode/
+.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Docker files (don't include other Docker files)
+docker-compose*.yml
+.dockerignore
+
+# Test files and reports (except required models.test.ts and tests/ folder)
+**/*.test.js
+**/*.test.ts
+!lib/ai/models.test.ts
+**/*.spec.js
+**/*.spec.ts
+!tests/
+test-results/
+playwright-report/
+coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Development tools
+.eslintcache
+.stylelintcache
+
+# Documentation
+README.md
+DOCKER.md
+docs/
+CHANGELOG.md
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Misc
+*.md
+!CHANGELOG.md
+!package*.json
