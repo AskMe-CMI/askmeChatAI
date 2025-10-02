@@ -2,11 +2,13 @@
 
 import type { UserPayload } from '@/app/(auth)/auth';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
 import { Button } from '@/components/ui/button';
+import logo from '@/public/images/logo.png';
 import {
   Sidebar,
   SidebarContent,
@@ -32,18 +34,19 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               onClick={() => {
                 setOpenMobile(false);
               }}
-              className="flex flex-row gap-3 items-center"
+              className="flex flex-row"
             >
-              <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
+              {/* <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
                 RMUTL Chat AI
-              </span>
+              </span> */}
+              <img src="/images/logo.png" alt="logo" className='w-auto h-6'/>
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
                   type="button"
-                  className="p-2 h-fit"
+                  className="p-2 h-fit text-white"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
