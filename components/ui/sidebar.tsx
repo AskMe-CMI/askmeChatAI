@@ -381,7 +381,8 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn('flex flex-col gap-2 p-2 text-primary', className)}
+      className={cn('flex flex-col gap-2 p-2 text-primary', '[html:not(.dark)_&_button:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_button:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!bg-[hsl(217_68%_38%)]', 
+        '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!text-white',className)}
       {...props}
     />
   );

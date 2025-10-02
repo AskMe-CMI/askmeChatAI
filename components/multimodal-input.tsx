@@ -400,7 +400,7 @@ function PureStopButton({
   return (
     <Button
       data-testid="stop-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600 text-white"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600 text-white dark:bg-ring"
       onClick={(event) => {
         event.preventDefault();
         stop();
@@ -427,7 +427,7 @@ function PureSendButton({
     <Button
       type="button"
       data-testid="send-button"
-      className="rounded-full p-1.5 h-fit border dark:border-zinc-600 text-white"
+      className="rounded-full p-1.5 h-fit border dark:border-zinc-600 text-white dark:bg-ring"
       onClick={(event) => {
         console.log('🎯 Send button clicked');
         event.preventDefault();
