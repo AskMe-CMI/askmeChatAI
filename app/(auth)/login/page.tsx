@@ -95,9 +95,9 @@ export default function LoginPage() {
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
       <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign In with OIDC</h3>
+          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign In</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Use your Microsoft account to RMUTL Chat AI
+            Use your Microsoft account to AskMe Chat AI
           </p>
         </div>
         
@@ -117,13 +117,13 @@ export default function LoginPage() {
                 <path fill="#FBBC09" d="M256 256.002H134.335V134.336H256z"/>
               </svg>
             )}
-            {isLoading ? 'Redirecting...' : 'Sign in with Microsoft (OIDC)'}
+            {isLoading ? 'Redirecting...' : 'Sign in with Microsoft'}
           </Button>
         </div>
         
         <div className="px-4 sm:px-16 text-center">
           <p className="text-xs text-gray-400">
-            Powered by ARIT RMUTL
+            Powered by Askme Solutions & Consultants Co.,Ltd.
           </p>
         </div>
       </div>
