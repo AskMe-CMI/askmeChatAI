@@ -6,8 +6,8 @@ import './globals.css';
 
 export const metadata: Metadata = {
   // metadataBase: new URL('https://chat.vercel.ai'),
-  title: 'RMUTL Chat AI',
-  description: 'RMUTL Chat AI.',
+  title: 'AskMe Chat AI',
+  description: 'AskMe Chat AI.',
 };
 
 export const viewport = {
