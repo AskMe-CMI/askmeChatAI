@@ -38,7 +38,7 @@ export default function OIDCCallbackPage() {
       setStatus('Authentication successful! Redirecting...');
       toast({
         type: 'success',
-        description: 'Authentication successful! Welcome to RMUTL Chat AI.',
+        description: 'Authentication successful! Welcome to AskMe Chat AI.',
       });
       
       setTimeout(() => {
