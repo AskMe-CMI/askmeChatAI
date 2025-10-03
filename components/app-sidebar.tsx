@@ -38,7 +38,7 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               {/* <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
                 RMUTL Chat AI
               </span> */}
-              <img src="/images/logo.svg" alt="logo" className='w-auto h-6'/>
+              <img src="/images/logo.svg" alt="logo" className='w-auto h-8'/>
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
