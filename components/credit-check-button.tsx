@@ -8,6 +8,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { LoaderIcon } from '@/components/icons';
 
 // Mock data - will be replaced with real API when backend is ready
 const MOCK_CREDITS = {
@@ -19,6 +20,7 @@ const MOCK_CREDITS = {
 
 export function CreditCheckButton() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -40,6 +42,23 @@ export function CreditCheckButton() {
             return () => document.removeEventListener('mousedown', handleClickOutside);
         }
     }, [isOpen]);
+
+    // Handle button click with loading state
+    const handleClick = async () => {
+        if (isOpen) {
+            setIsOpen(false);
+            return;
+        }
+
+        setIsLoading(true);
+        setIsOpen(true);
+
+        // TODO: Replace with actual API call
+        // Simulate loading delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        setIsLoading(false);
+    };
 
     // TODO: Replace with useSWR when API is ready
     const credits = MOCK_CREDITS;
@@ -81,57 +100,70 @@ export function CreditCheckButton() {
                         </button>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Remaining</span>
-                            <span className={getStatusColor()}>{(100 - percentage).toFixed(1)}%</span>
-                        </div>
-                        <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                                className={`h-full transition-all duration-500 ${getProgressColor()}`}
-                                style={{ width: `${Math.max(100 - percentage, 0)}%` }}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                        <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
-                            <div className="text-xs text-muted-foreground">Used</div>
-                            <div className="text-xl font-bold text-foreground">{formatNumber(credits.used)}</div>
-                            <div className="text-xs text-muted-foreground">tokens</div>
-                        </div>
-                        <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
-                            <div className="text-xs text-muted-foreground">Remaining</div>
-                            <div className={`text-xl font-bold ${getStatusColor()}`}>
-                                {formatNumber(credits.remaining)}
+                    {/* Loading State */}
+                    {isLoading ? (
+                        <div className="flex flex-col items-center justify-center py-8">
+                            <div className="w-8 h-8 animate-spin text-muted-foreground">
+                                <LoaderIcon size={32} />
                             </div>
-                            <div className="text-xs text-muted-foreground">tokens</div>
+                            <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
                         </div>
-                    </div>
+                    ) : (
+                        <>
 
-                    {/* Additional Info */}
-                    <div className="space-y-1 text-sm border-t pt-3">
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Total Quota</span>
-                            <span className="text-foreground">{formatNumber(credits.limit)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="text-muted-foreground">Resets on</span>
-                            <span className="text-foreground">
-                                {new Date(credits.resetDate).toLocaleDateString('en-US', {
-                                    day: 'numeric',
-                                    month: 'short',
-                                    year: 'numeric',
-                                })}{' '}
-                                {new Date(credits.resetDate).toLocaleTimeString('en-US', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                })}
-                            </span>
-                        </div>
-                    </div>
+                            {/* Progress Bar */}
+                            <div className="space-y-2 mb-4">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Remaining</span>
+                                    <span className={getStatusColor()}>{(100 - percentage).toFixed(1)}%</span>
+                                </div>
+                                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${getProgressColor()}`}
+                                        style={{ width: `${Math.max(100 - percentage, 0)}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Stats Grid */}
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
+                                    <div className="text-xs text-muted-foreground">Used</div>
+                                    <div className="text-xl font-bold text-foreground">{formatNumber(credits.used)}</div>
+                                    <div className="text-xs text-muted-foreground">tokens</div>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
+                                    <div className="text-xs text-muted-foreground">Remaining</div>
+                                    <div className={`text-xl font-bold ${getStatusColor()}`}>
+                                        {formatNumber(credits.remaining)}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">tokens</div>
+                                </div>
+                            </div>
+
+                            {/* Additional Info */}
+                            <div className="space-y-1 text-sm border-t pt-3">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Total Quota</span>
+                                    <span className="text-foreground">{formatNumber(credits.limit)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Resets on</span>
+                                    <span className="text-foreground">
+                                        {new Date(credits.resetDate).toLocaleDateString('en-US', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric',
+                                        })}{' '}
+                                        {new Date(credits.resetDate).toLocaleTimeString('en-US', {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        })}
+                                    </span>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -140,11 +172,18 @@ export function CreditCheckButton() {
                 ref={buttonRef}
                 variant="outline"
                 size="icon"
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={handleClick}
+                disabled={isLoading}
                 className="h-12 w-12 rounded-full shadow-lg bg-background hover:bg-muted border-2"
                 title="Check Credit/Token"
             >
-                <span className="text-lg">💎</span>
+                {isLoading ? (
+                    <div className="w-5 h-5 animate-spin">
+                        <LoaderIcon size={20} />
+                    </div>
+                ) : (
+                    <span className="text-lg">💎</span>
+                )}
             </Button>
         </div>
     );
