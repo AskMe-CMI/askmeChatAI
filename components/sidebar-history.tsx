@@ -22,11 +22,13 @@ import {
   SidebarMenu,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { Chat } from '@/lib/db/schema';
 import { fetcher } from '@/lib/utils';
 import { ChatItem } from './sidebar-history-item';
 import useSWRInfinite from 'swr/infinite';
-import { LoaderIcon } from './icons';
+import { LoaderIcon, PlusIcon } from './icons';
 
 type GroupedChats = {
   today: Chat[];
@@ -217,6 +219,22 @@ export function SidebarHistory({
     <>
       <SidebarGroup>
         <SidebarGroupContent>
+          {/* New Chat Button - ปุ่มสร้าง Chat ใหม่ */}
+          <div className="px-2 mb-4">
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={() => {
+                setOpenMobile(false);
+                router.push('/');
+                router.refresh();
+              }}
+            >
+              <PlusIcon />
+              <span>New Chat</span>
+            </Button>
+          </div>
+
           <SidebarMenu>
             {paginatedChatHistories &&
               (() => {

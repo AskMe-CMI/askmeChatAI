@@ -1,13 +1,9 @@
 'use client';
 
 import type { UserPayload } from '@/app/(auth)/auth';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 
-import { PlusIcon } from '@/components/icons';
 import { SidebarHistory } from '@/components/sidebar-history';
 import { SidebarUserNav } from '@/components/sidebar-user-nav';
-import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -17,10 +13,8 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
-  const router = useRouter();
   const { setOpenMobile } = useSidebar();
 
   return (
@@ -38,25 +32,8 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               {/* <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
                 RMUTL Chat AI
               </span> */}
-              <img src="/images/logo.svg" alt="logo" className='w-auto h-8'/>
+              <img src="/images/logo.svg" alt="logo" className='w-auto h-8' />
             </Link>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  type="button"
-                  className="p-2 h-fit text-white"
-                  onClick={() => {
-                    setOpenMobile(false);
-                    router.push('/');
-                    router.refresh();
-                  }}
-                >
-                  <PlusIcon />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent align="end">New Chat</TooltipContent>
-            </Tooltip>
           </div>
         </SidebarMenu>
       </SidebarHeader>
