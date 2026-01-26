@@ -6,6 +6,7 @@ import { getSessionFromAPI } from '@/lib/auth/local-auth';
 import Script from 'next/script';
 import { DataStreamProvider } from '@/components/data-stream-provider';
 import { sha512 } from 'js-sha512';
+import { CreditCheckButton } from '@/components/credit-check-button';
 
 export const experimental_ppr = true;
 
@@ -27,12 +28,12 @@ export default async function Layout({
   // Convert API session to UserPayload format
   const userPayload = session
     ? {
-        sub: session.id,
-        // email: session.email,
-        email: `${sha512(`AskMe${session.email}`).substring(0,4)}-${sha512(`AskMe${session.email}`).substring(5,10)}-${sha512(`AskMe${session.email}`).substring(11,15)}-${sha512(`AskMe${session.email}`).substring(16,20)}`,
-        emailRmutl: session.emailRmutl,
-        type: 'regular' as const,
-      }
+      sub: session.id,
+      // email: session.email,
+      email: `${sha512(`AskMe${session.email}`).substring(0, 4)}-${sha512(`AskMe${session.email}`).substring(5, 10)}-${sha512(`AskMe${session.email}`).substring(11, 15)}-${sha512(`AskMe${session.email}`).substring(16, 20)}`,
+      emailRmutl: session.emailRmutl,
+      type: 'regular' as const,
+    }
     : null;
 
   return (
@@ -47,6 +48,9 @@ export default async function Layout({
           <SidebarInset>{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
+
+      {/* ปุ่ม Check Credit/Token ล่างขวา */}
+      <CreditCheckButton />
     </>
   );
 }
