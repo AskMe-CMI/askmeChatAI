@@ -219,7 +219,6 @@ export function SidebarHistory({
     <>
       <SidebarGroup>
         <SidebarGroupContent>
-          {/* New Chat Button - ปุ่มสร้าง Chat ใหม่ */}
           <div className="px-2 mb-4">
             <Button
               variant="outline"
