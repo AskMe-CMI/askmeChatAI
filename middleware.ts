@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow requests to auth pages to proceed
-  if (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint') {
+  if (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint' || pathname === '/register') {
     console.log('🔓 Allowing auth page access:', pathname);
     return NextResponse.next();
   }
@@ -83,7 +83,7 @@ export async function middleware(request: NextRequest) {
   // console.log('✅ Session found, allowing access to:', pathname);
 
   // If the user is logged in and tries to access login pages, redirect to home
-  if (session && (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint')) {
+  if (session && (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint' || pathname === '/register')) {
     // console.log('🏠 Redirecting logged-in user from login to home');
     return NextResponse.redirect(new URL('/', request.url));
   }

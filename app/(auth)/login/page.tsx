@@ -30,7 +30,7 @@ export default function LoginPage() {
   // ตรวจสอบ URL parameters สำหรับ OIDC response
   // useEffect(() => {
   //   const urlParams = new URLSearchParams(window.location.search);
-    
+
   //   // ตรวจสอบว่ามี error จาก OIDC provider หรือไม่
   //   const oidcError = parseOIDCError(urlParams);
   //   if (oidcError) {
@@ -45,7 +45,7 @@ export default function LoginPage() {
   //   // ถ้ามี code และ state แสดงว่ากลับมาจาก callback
   //   const code = urlParams.get('code');
   //   const state = urlParams.get('state');
-    
+
   //   if (code && state) {
   //     // Redirect ไป callback page เพื่อจัดการ tokens
   //     router.push(`/oidc/callback?code=${code}&state=${state}`);
@@ -54,7 +54,7 @@ export default function LoginPage() {
 
   const handleOIDCLogin = async () => {
     setIsLoading(true);
-    
+
     try {
       // call api/oidc-auth-url to get authorization URL
       const response = await fetch('/api/auth/oidc-auth-url');
@@ -66,19 +66,19 @@ export default function LoginPage() {
       // }
       // สร้าง authorization URL และ state
       // const { url, state } = createAuthorizationUrl();
-      
+
       // console.log('🔐 Starting OIDC login process');
       // console.log('Generated state:', state);
       // console.log('Authorization URL:', url);
-      
+
       // เก็บ state ใน sessionStorage สำหรับการตรวจสอบ
       sessionStorage.setItem('oidc_state', JSON.stringify(state));
       console.log('💾 State saved to sessionStorage');
-      
+
       // เก็บ state ใน localStorage เป็น backup
       localStorage.setItem('oidc_state_backup', JSON.stringify(state));
       console.log('💾 State backup saved to localStorage');
-      
+
       // // Redirect ไปยัง Microsoft login
       window.location.href = url;
     } catch (error) {
@@ -95,13 +95,13 @@ export default function LoginPage() {
     <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
       <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
         <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-          <h3 className="text-xl font-semibold dark:text-zinc-50">Sign In</h3>
+          <h3 className="text-xl font-semibold dark:text-zinc-50">Login</h3>
           <p className="text-sm text-gray-500 dark:text-zinc-400">
-            Use your Microsoft account to AskMe Chat AI
+            Sign in to your AskMe Chat AI account
           </p>
         </div>
-        
-        <div className="flex flex-col px-4 sm:px-16">
+
+        <div className="flex flex-col gap-3 px-4 sm:px-16">
           <Button
             onClick={handleOIDCLogin}
             disabled={isLoading}
@@ -111,16 +111,33 @@ export default function LoginPage() {
               <LoaderIcon size={16} />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 256 256">
-                <path fill="#F1511B" d="M121.666 121.666H0V0h121.666z"/>
-                <path fill="#80CC28" d="M256 121.666H134.335V0H256z"/>
-                <path fill="#00ADEF" d="M121.663 256.002H0V134.336h121.663z"/>
-                <path fill="#FBBC09" d="M256 256.002H134.335V134.336H256z"/>
+                <path fill="#F1511B" d="M121.666 121.666H0V0h121.666z" />
+                <path fill="#80CC28" d="M256 121.666H134.335V0H256z" />
+                <path fill="#00ADEF" d="M121.663 256.002H0V134.336h121.663z" />
+                <path fill="#FBBC09" d="M256 256.002H134.335V134.336H256z" />
               </svg>
             )}
-            {isLoading ? 'Redirecting...' : 'Sign in with Microsoft'}
+            {isLoading ? 'Redirecting...' : 'Login with Microsoft'}
+          </Button>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+
+          <Button
+            variant="outline"
+            onClick={() => router.push('/register')}
+            className="w-full"
+          >
+            Register
           </Button>
         </div>
-        
+
         <div className="px-4 sm:px-16 text-center">
           <p className="text-xs text-gray-400">
             Powered by Askme Solutions & Consultants Co.,Ltd.
