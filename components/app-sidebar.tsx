@@ -34,14 +34,14 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               className="flex items-center overflow-hidden group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden"
             >
               <img
-                src="/images/logoA.png"
+                src="/images/logoL.png"
                 alt="logo"
                 className="h-6 w-auto rounded-full dark:hidden"
               />
               <img
-                src="/images/logoA.png"
+                src="/images/logoL.png"
                 alt="logo"
-                className="h-6 w-auto rounded-full hidden dark:block"
+                className="h-6 w-auto p-[0.275rem] bg-white rounded-full hidden dark:block"
               />
             </Link>
 
@@ -62,16 +62,16 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
                       className="h-6 w-6 dark:hidden group-hover/toggle-btn:hidden"
                     />
                     <img
-                      src="/images/logoD.ico"
+                      src="/images/logoL.ico"
                       alt="logo"
-                      className="h-6 w-6 hidden dark:block group-hover/toggle-btn:dark:hidden"
+                      className="h-6 w-6 hidden p-[0.275rem] bg-white rounded-full dark:block group-hover/toggle-btn:dark:hidden"
                     />
                     {/* Expand icon - shown on hover */}
                     <PanelLeft className="h-4 w-4 hidden group-hover/toggle-btn:block" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  Expand Sidebar (⌘B)
+                  Expand Sidebar
                 </TooltipContent>
               </Tooltip>
             ) : (
@@ -83,13 +83,13 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
                     onClick={toggleSidebar}
                     aria-expanded={true}
                     aria-label="Collapse Sidebar"
-                    className="h-7 w-7 shrink-0"
+                    className="h-8 w-8 shrink-0"
                   >
                     <PanelLeftClose className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  Collapse Sidebar (⌘B)
+                  Collapse Sidebar
                 </TooltipContent>
               </Tooltip>
             )}

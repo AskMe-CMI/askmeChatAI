@@ -45,7 +45,7 @@ export default async function Layout({
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
           <AppSidebar user={userPayload} />
-          <SidebarInset>{children}</SidebarInset>
+          <SidebarInset className="bg-transparent">{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
 

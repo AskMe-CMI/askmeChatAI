@@ -49,7 +49,7 @@
         --chart-4: 43 74% 66%;
         --chart-5: 27 87% 67%;
         --radius: 0.5rem;
-        --sidebar-background: 220 10% 96%;
+        --sidebar-background: 0 0% 100%;
         --sidebar-background-header: 217 68% 38%;
         --sidebar-foreground: 222 47% 20%;
         --sidebar-primary: 217 68% 38%;
@@ -59,6 +59,7 @@
         --sidebar-border: 220 12% 85%;
         --sidebar-ring: 217 68% 38%;
     }
+
     .dark {
         --background: 215 36% 10%;
         --foreground: 210 20% 95%;
@@ -102,7 +103,13 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply text-foreground min-h-screen relative;
+        background-image: linear-gradient(to top, #eff6ff, #ffffff);
+    }
+
+    .dark body {
+        background-image: none;
+        background-color: hsl(var(--background));
     }
 }
 
@@ -134,7 +141,7 @@
     @apply bg-background dark:bg-zinc-800 outline-none selection:bg-zinc-900 !important;
 }
 
-.ͼo.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground,
+.ͼo.cm-focused>.cm-scroller>.cm-selectionLayer .cm-selectionBackground,
 .ͼo.cm-selectionBackground,
 .ͼo.cm-content::selection {
     @apply bg-zinc-200 dark:bg-zinc-900 !important;
@@ -173,4 +180,3 @@
 [data-sidebar] * {
     transition: opacity 150ms ease-in-out, padding 150ms ease-in-out;
 }
-

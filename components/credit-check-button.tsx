@@ -87,7 +87,7 @@ export function CreditCheckButton() {
             {isOpen && (
                 <div
                     ref={panelRef}
-                    className="absolute bottom-16 right-0 w-80 bg-background border rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute bottom-16 right-0 w-80 bg-white/80 backdrop-blur-lg dark:bg-zinc-900/80 border rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-200"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
