@@ -166,7 +166,7 @@ export function SidebarHistory({
     return (
       <SidebarGroup>
         <SidebarGroupContent>
-          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2">
+          <div className="px-2 text-zinc-500 w-full flex flex-row justify-center items-center text-sm gap-2 group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
             Login to save and revisit previous chats!
           </div>
         </SidebarGroupContent>
@@ -177,11 +177,11 @@ export function SidebarHistory({
   if (isLoading) {
     return (
       <SidebarGroup>
-        <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
+        <div className="px-2 py-1 text-xs text-sidebar-foreground/50 group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
           Today
         </div>
         <SidebarGroupContent>
-          <div className="flex flex-col">
+          <div className="flex flex-col group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
             {[44, 32, 28, 64, 52].map((item) => (
               <div
                 key={item}
@@ -207,7 +207,7 @@ export function SidebarHistory({
     return (
       <SidebarGroup>
         <SidebarGroupContent>
-          <div className="px-2 text-sidebar-foreground/50 w-full flex flex-row justify-center items-center text-sm gap-2">
+          <div className="px-2 text-sidebar-foreground/50 w-full flex flex-row justify-center items-center text-sm gap-2 group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
             Your conversations will appear here once you start chatting!
           </div>
         </SidebarGroupContent>
@@ -219,22 +219,36 @@ export function SidebarHistory({
     <>
       <SidebarGroup>
         <SidebarGroupContent>
-          <div className="px-2 mb-4">
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2"
-              onClick={() => {
-                setOpenMobile(false);
-                router.push('/');
-                router.refresh();
-              }}
-            >
-              <PlusIcon />
-              <span>New Chat</span>
-            </Button>
+          <div className="mb-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-2 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:group-data-[state=collapsed]:w-8 group-data-[collapsible=icon]:group-data-[state=collapsed]:p-0 group-data-[collapsible=icon]:group-data-[state=collapsed]:justify-center"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push('/');
+                    router.refresh();
+                  }}
+                >
+                  <div className="shrink-0">
+                    <PlusIcon />
+                  </div>
+                  <span className="group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
+                    New Chat
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="group-data-[collapsible=icon]:group-data-[state=expanded]:hidden"
+              >
+                New Chat
+              </TooltipContent>
+            </Tooltip>
           </div>
 
-          <SidebarMenu>
+          <SidebarMenu className="group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
             {paginatedChatHistories &&
               (() => {
                 const chatsFromHistory = paginatedChatHistories.flatMap(

@@ -366,7 +366,7 @@ const SidebarHeader = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="header"
-      className={cn('flex flex-col gap-2 px-3 py-4 bg-[hsl(var(--sidebar-background-header))]', className)}
+      className={cn('flex flex-col gap-2 px-4 pt-2', className)}
       {...props}
     />
   );
@@ -381,8 +381,8 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn('flex flex-col gap-2 p-2 dark:text-white text-primary', '[html:not(.dark)_&_button:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_button:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!bg-[hsl(217_68%_38%)]', 
-        '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!text-white',className)}
+      className={cn('flex flex-col gap-2 p-2 dark:text-white text-primary', '[html:not(.dark)_&_button:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_button:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!bg-[hsl(217_68%_38%)]',
+        '[html:not(.dark)_&_[data-sidebar=menu-button]:hover]:!text-white', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!bg-[hsl(217_68%_38%)]', '[html:not(.dark)_&_[data-sidebar=menu-sub-button]:hover]:!text-white', className)}
       {...props}
     />
   );
@@ -623,7 +623,7 @@ const SidebarMenuAction = React.forwardRef<
         'peer-data-[size=lg]/menu-button:top-2.5',
         'group-data-[collapsible=icon]:hidden',
         showOnHover &&
-          'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
+        'group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 peer-data-[active=true]/menu-button:text-sidebar-accent-foreground md:opacity-0',
         className,
       )}
       {...props}

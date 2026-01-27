@@ -17,6 +17,7 @@ import {
 } from './icons';
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 const PureChatItem = ({
   chat,
@@ -36,16 +37,34 @@ const PureChatItem = ({
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={isActive}>
-        <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-          <span>{chat.title}</span>
-        </Link>
-      </SidebarMenuButton>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SidebarMenuButton
+            asChild
+            isActive={isActive}
+            aria-current={isActive ? 'page' : undefined}
+          >
+            <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
+              <span className="truncate">
+                {chat.title}
+              </span>
+            </Link>
+          </SidebarMenuButton>
+        </TooltipTrigger>
+        {/* Tooltip only shows when collapsed */}
+        <TooltipContent
+          side="right"
+          className="max-w-[200px] group-data-[collapsible=icon]:group-data-[state=expanded]:hidden"
+        >
+          {chat.title}
+        </TooltipContent>
+      </Tooltip>
 
+      {/* Dropdown menu - hide when collapsed */}
       <DropdownMenu modal={true}>
         <DropdownMenuTrigger asChild>
           <SidebarMenuAction
-            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5"
+            className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground mr-0.5 group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden"
             showOnHover={!isActive}
           >
             <MoreHorizontalIcon />
@@ -54,43 +73,6 @@ const PureChatItem = ({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent side="bottom" align="end">
-          {/* <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="cursor-pointer">
-              <ShareIcon />
-              <span>Share</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem
-                  className="cursor-pointer flex-row justify-between"
-                  onClick={() => {
-                    setVisibilityType('private');
-                  }}
-                >
-                  <div className="flex flex-row gap-2 items-center">
-                    <LockIcon size={12} />
-                    <span>Private</span>
-                  </div>
-                  {visibilityType === 'private' ? (
-                    <CheckCircleFillIcon />
-                  ) : null}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="cursor-pointer flex-row justify-between"
-                  onClick={() => {
-                    setVisibilityType('public');
-                  }}
-                >
-                  <div className="flex flex-row gap-2 items-center">
-                    <GlobeIcon />
-                    <span>Public</span>
-                  </div>
-                  {visibilityType === 'public' ? <CheckCircleFillIcon /> : null}
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub> */}
-
           <DropdownMenuItem
             className="cursor-pointer text-destructive focus:bg-destructive/15 focus:text-destructive dark:text-red-500"
             onSelect={() => {
