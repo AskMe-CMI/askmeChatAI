@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { AuthForm } from '@/components/auth-form';
 import { SubmitButton } from '@/components/submit-button';
 import { MsalButton } from '@/components/msal-button';
-import { PDPAConsentModal } from '@/components/pdpa-consent-modal';
+
 
 import { loginWithBackendAPI, type LoginActionState } from '../api-actions';
 import { lowercase } from 'zod/v4';
@@ -55,7 +55,7 @@ export default function LoginPage() {
 
   return (
     <>
-      <PDPAConsentModal />
+
       <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center">
         <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-3">
           <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">

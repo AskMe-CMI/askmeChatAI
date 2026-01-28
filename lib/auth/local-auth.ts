@@ -64,17 +64,15 @@ export async function getSessionFromAPI(): Promise<UserProfile | null> {
       return null;
     }
 
-    // console.log('Verifying token with backend...');
+    // Verify token with backend and get user profile
     const user = await verifyTokenWithBackend(token.value);
 
     if (!user) {
-      // console.log('Token verification failed');
-      // Clear invalid token
+      // Token invalid or expired
       cookieStore.delete(COOKIE_NAME);
       return null;
     }
 
-    // console.log('Token verified, user:', user);
     return user;
   } catch (error) {
     // If this is React's special postpone object used by Next.js to bail out of

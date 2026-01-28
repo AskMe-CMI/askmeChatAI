@@ -2,8 +2,7 @@
  * API Client for authentication with backend
  */
 
-const BACKEND_API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000/api/mock';
+const BACKEND_API_URL = 'http://192.168.9.14:8000';
 
 export interface LoginRequest {
   email: string;
@@ -25,12 +24,12 @@ export interface LoginResponse {
 }
 
 export interface UserProfile {
-  id: string;
+  id: number;
   email: string;
-  emailRmutl: string;
-  name?: string;
-  role?: string;
-  userDify?: string;
+  full_name: string;
+  is_active: boolean;
+  is_superuser: boolean;
+  spend_limit: number;
 }
 
 /**
@@ -40,32 +39,55 @@ export async function loginWithBackend(
   credentials: LoginRequest,
 ): Promise<LoginResponse> {
   try {
-    console.log('URL:', BACKEND_API_URL);
-    
-    const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
+    console.log('Login URL:', `${BACKEND_API_URL}/api/v1/login`);
+
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(credentials),
     });
-    
-    const data = await response.json();
+
+    // Check content type json
+    const contentType = response.headers.get("content-type");
+    let data;
+
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      data = await response.json();
+    } else {
+      // Handle non-JSON response (e.g., 404 HTML page)
+      const text = await response.text();
+      console.error('Non-JSON response:', text.substring(0, 100)); // Log first 100 chars
+      return {
+        success: false,
+        message: `Server returned ${response.status} ${response.statusText}`,
+      };
+    }
 
     if (!response.ok) {
       return {
         success: false,
-        message: data.message || 'Login failed',
+        message: data.message || `Login failed with status ${response.status}`,
       };
     }
+
+    // API returns { access_token, token_type } per Swagger spec
+    // User info not returned from login, construct from email
+    const user = {
+      id: '0',
+      email: credentials.email,
+      emailRmutl: '',
+      name: credentials.email.split('@')[0]
+    };
 
     return {
       success: true,
       user: {
-        ...data.user,
-        emailRmutl: `R${data.user.email}`,
+        ...user,
+        emailRmutl: user.emailRmutl || `R${user.email}`,
       },
-      token: data.token,
+      token: data.access_token,
     };
   } catch (error) {
     console.error('Login API error:', error);
@@ -77,13 +99,14 @@ export async function loginWithBackend(
 }
 
 /**
- * Verify token with backend API
+ * Verify token and get user profile from backend API
  */
 export async function verifyTokenWithBackend(
   token: string,
 ): Promise<UserProfile | null> {
   try {
-    const response = await fetch(`${BACKEND_API_URL}/auth/verify`, {
+    // Use /api/v1/users/me endpoint per Swagger spec
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/users/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -92,11 +115,17 @@ export async function verifyTokenWithBackend(
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        // Token expired or invalid
+        return null;
+      }
+      // Other errors, log but return null
+      console.warn(`Verify token failed status: ${response.status}`);
       return null;
     }
 
-    const data = await response.json();
-    return data.user;
+    const user = await response.json();
+    return user;
   } catch (error) {
     console.error('Token verification error:', error);
     return null;
@@ -108,7 +137,8 @@ export async function verifyTokenWithBackend(
  */
 export async function logoutFromBackend(token: string): Promise<boolean> {
   try {
-    const response = await fetch(`${BACKEND_API_URL}/auth/logout`, {
+    // Assuming /api/logout
+    const response = await fetch(`${BACKEND_API_URL}/api/logout`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
