@@ -34,12 +34,12 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               className="flex items-center overflow-hidden group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden"
             >
               <img
-                src="/images/logoL.png"
+                src="/images/logoW.png"
                 alt="logo"
                 className="h-6 w-auto rounded-full dark:hidden"
               />
               <img
-                src="/images/logoL.png"
+                src="/images/logoB.png"
                 alt="logo"
                 className="h-6 w-auto p-[0.275rem] bg-white rounded-full hidden dark:block"
               />
