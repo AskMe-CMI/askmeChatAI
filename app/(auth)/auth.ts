@@ -118,7 +118,7 @@ async function verifyToken(token: string): Promise<UserPayload | null> {
     return {
       sub: payload.sub,
       // email: payload.email,
-      email: `${sha512(`AskMe${payload.email}`).substring(0,4)}-${sha512(`AskMe${payload.email}`).substring(5,10)}-${sha512(`AskMe${payload.email}`).substring(11,15)}-${sha512(`AskMe${payload.email}`).substring(16,20)}`,
+      email: `${sha512(`AskMe${payload.email}`).substring(0, 4)}-${sha512(`AskMe${payload.email}`).substring(5, 10)}-${sha512(`AskMe${payload.email}`).substring(11, 15)}-${sha512(`AskMe${payload.email}`).substring(16, 20)}`,
       emailRmutl: `${payload.email}`,
       type: payload.type,
     };
@@ -144,7 +144,7 @@ export async function createSession(user: {
   const payload: UserPayload = {
     sub: user.id,
     // email: user.email,
-    email: `${sha512(`AskMe${user.email}`).substring(0,4)}-${sha512(`AskMe${user.email}`).substring(5,10)}-${sha512(`AskMe${user.email}`).substring(11,15)}-${sha512(`AskMe${user.email}`).substring(16,20)}`,
+    email: `${sha512(`AskMe${user.email}`).substring(0, 4)}-${sha512(`AskMe${user.email}`).substring(5, 10)}-${sha512(`AskMe${user.email}`).substring(11, 15)}-${sha512(`AskMe${user.email}`).substring(16, 20)}`,
     emailRmutl: `${user.email}`,
     type: user.type,
   };
@@ -202,13 +202,13 @@ export async function getSession(): Promise<UserPayload | null> {
       const userEmail = parts[4];
       const userEmailRmutl = `R${parts[4]}`;
       // console.log('Mock token userId:', token);
-      
+
       // Return mock session data — map userId to the mock user's email when available
       // const mockUser = getUserById(userId);
       const mockSession: UserPayload = {
         sub: userId,
         // email: userEmail || 'admin@rmutl.ac.th',
-        email: `${sha512(`AskMe${userEmail}`).substring(0,4)}-${sha512(`AskMe${userEmail}`).substring(5,10)}-${sha512(`AskMe${userEmail}`).substring(11,15)}-${sha512(`AskMe${userEmail}`).substring(16,20)}`,
+        email: `${sha512(`AskMe${userEmail}`).substring(0, 4)}-${sha512(`AskMe${userEmail}`).substring(5, 10)}-${sha512(`AskMe${userEmail}`).substring(11, 15)}-${sha512(`AskMe${userEmail}`).substring(16, 20)}`,
         emailRmutl: userEmailRmutl,
         type: 'regular',
       };
@@ -271,7 +271,7 @@ export async function signIn(email: string, password?: string) {
   const user = {
     id: '12345', // Dummy user ID
     // email: email,
-    email: `${sha512(`AskMe${email}`).substring(0,4)}-${sha512(`AskMe${email}`).substring(5,10)}-${sha512(`AskMe${email}`).substring(11,15)}-${sha512(`AskMe${email}`).substring(16,20)}`,
+    email: `${sha512(`AskMe${email}`).substring(0, 4)}-${sha512(`AskMe${email}`).substring(5, 10)}-${sha512(`AskMe${email}`).substring(11, 15)}-${sha512(`AskMe${email}`).substring(16, 20)}`,
     emailRmutl: `${email}`,
     type: 'regular' as const,
   };
@@ -281,21 +281,42 @@ export async function signIn(email: string, password?: string) {
 /**
  * A function to get the authenticated user session.
  * This is a replacement for the `auth` object from next-auth.
+ * Supports both Backend API tokens and local JWT tokens.
  */
 export async function auth(): Promise<AuthResponse> {
+  // First, try to get session from Backend API (for Backend JWT tokens)
+  try {
+    const { getSessionFromAPI } = await import('@/lib/auth/local-auth');
+    const backendUser = await getSessionFromAPI();
+
+    if (backendUser) {
+      console.log('Auth session (from Backend API):', backendUser.email);
+      return {
+        user: {
+          id: String(backendUser.id),
+          email: `${sha512(`AskMe${backendUser.email}`).substring(0, 4)}-${sha512(`AskMe${backendUser.email}`).substring(5, 10)}-${sha512(`AskMe${backendUser.email}`).substring(11, 15)}-${sha512(`AskMe${backendUser.email}`).substring(16, 20)}`,
+          emailRmutl: backendUser.email,
+          type: 'regular',
+        },
+      };
+    }
+  } catch (error) {
+    console.log('Backend API session check failed, trying local session');
+  }
+
+  // Fallback to local session (for mock tokens and local JWT)
   const session = await getSession();
-  console.log('Auth session:', session);
-  
+  console.log('Auth session (local):', session);
+
   if (!session) return null;
 
   // Wrap the payload in the compatibility shape expected by callers.
   return {
-    user: { 
-      id: session.sub, 
-      // email: session.email, 
-      email: `${sha512(`AskMe${session.email}`).substring(0,4)}-${sha512(`AskMe${session.email}`).substring(5,10)}-${sha512(`AskMe${session.email}`).substring(11,15)}-${sha512(`AskMe${session.email}`).substring(16,20)}`,
-      emailRmutl: `${session.email}`, 
-      type: session.type 
+    user: {
+      id: session.sub,
+      email: `${sha512(`AskMe${session.email}`).substring(0, 4)}-${sha512(`AskMe${session.email}`).substring(5, 10)}-${sha512(`AskMe${session.email}`).substring(11, 15)}-${sha512(`AskMe${session.email}`).substring(16, 20)}`,
+      emailRmutl: `${session.email}`,
+      type: session.type
     },
   };
 }

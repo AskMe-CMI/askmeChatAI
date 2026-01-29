@@ -67,6 +67,25 @@ export default function RegisterPage() {
                     <Form action={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
                         <div className="flex flex-col gap-2">
                             <Label
+                                htmlFor="username"
+                                className="text-zinc-600 font-normal dark:text-zinc-400"
+                            >
+                                Username
+                            </Label>
+                            <Input
+                                id="username"
+                                name="username"
+                                className="bg-muted text-md md:text-sm"
+                                type="text"
+                                placeholder="johndoe"
+                                autoComplete="username"
+                                required
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label
                                 htmlFor="fullName"
                                 className="text-zinc-600 font-normal dark:text-zinc-400"
                             >
@@ -80,7 +99,6 @@ export default function RegisterPage() {
                                 placeholder="John Doe"
                                 autoComplete="name"
                                 required
-                                autoFocus
                             />
                         </div>
 

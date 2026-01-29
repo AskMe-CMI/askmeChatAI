@@ -73,13 +73,14 @@ export async function registerWithBackendAPI(
   formData: FormData,
 ): Promise<RegisterActionState> {
   try {
+    const username = formData.get('username') as string;
+    const fullName = formData.get('fullName') as string;
     const email = formData.get('email') as string;
     const password = formData.get('password') as string;
     const confirmPassword = formData.get('confirmPassword') as string;
-    const fullName = formData.get('fullName') as string;
 
     // Validate inputs
-    if (!email || !password || !confirmPassword || !fullName) {
+    if (!username || !fullName || !email || !password || !confirmPassword) {
       return {
         status: 'invalid_data',
         message: 'Please fill in all fields',
@@ -102,17 +103,22 @@ export async function registerWithBackendAPI(
 
     console.log('Registering user:', email);
 
+    // Prepare registration data matching Backend API spec
+    const registrationData = {
+      email,
+      username,
+      password,
+      full_name: fullName,
+    };
+    console.log('Registration request body:', JSON.stringify(registrationData));
+
     // Call register API (Server-side fetch)
     const response = await fetch(`${BACKEND_API_URL}/api/v1/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        email,
-        password,
-        full_name: fullName,
-      }),
+      body: JSON.stringify(registrationData),
     });
 
     // Always try to parse JSON
