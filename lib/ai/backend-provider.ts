@@ -229,3 +229,90 @@ export async function addMessageToSession(
     }
 }
 
+/**
+ * Response from sending a message to a session
+ */
+interface SessionMessageResponse {
+    session_id: number;
+    user_message: {
+        id: number;
+        role: string;
+        content: string;
+        created_at: string;
+    };
+    ai_message: {
+        id: number;
+        role: string;
+        content: string;
+        model: string;
+        tokens: number;
+        created_at: string;
+    };
+    usage?: {
+        completion_tokens: number;
+        prompt_tokens: number;
+        total_tokens: number;
+    };
+}
+
+/**
+ * Send a message to a Backend session and get AI response
+ * This endpoint handles everything: sends to AI, saves user message, saves AI response
+ * 
+ * @param sessionId - The Backend session ID
+ * @param content - The user's message content
+ * @param model - Optional model to use (defaults to session's model)
+ * @returns The response containing both user and AI messages, or null on error
+ */
+export async function sendMessageToSession(
+    sessionId: number,
+    content: string,
+    model?: string
+): Promise<SessionMessageResponse | null> {
+    const token = await getStoredToken();
+
+    if (!token) {
+        console.error('❌ No JWT token available for sending message');
+        return null;
+    }
+
+    console.log('📤 Sending message to Backend session:', {
+        sessionId,
+        contentLength: content.length,
+        model: model || '(session default)',
+    });
+
+    try {
+        const body: any = { content };
+        if (model) body.model = model;
+
+        const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Failed to send message to session:', errorText);
+            return null;
+        }
+
+        const data: SessionMessageResponse = await response.json();
+
+        console.log('✅ Message sent to Backend session:', {
+            sessionId: data.session_id,
+            userMessageId: data.user_message.id,
+            aiMessageId: data.ai_message.id,
+            aiContentLength: data.ai_message.content.length,
+        });
+
+        return data;
+    } catch (error) {
+        console.error('❌ Error sending message to session:', error);
+        return null;
+    }
+}

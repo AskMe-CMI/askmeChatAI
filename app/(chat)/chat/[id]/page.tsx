@@ -138,7 +138,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           initialVisibilityType={chat.visibility}
           isReadonly={isReadonly}
           session={userSession}
-          autoResume={true}
+          autoResume={false}
         />
         <DataStreamHandler />
       </>
@@ -154,7 +154,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         initialVisibilityType={chat.visibility}
         isReadonly={isReadonly}
         session={userSession}
-        autoResume={true}
+        autoResume={false}
       />
       <DataStreamHandler />
     </>

@@ -50,6 +50,26 @@ export function Chat({
   const { setDataStream } = useDataStream();
 
   const [input, setInput] = useState<string>('');
+  // Track the actual chat ID (Backend session ID) after first message
+  const [actualChatId, setActualChatId] = useState<string>(id);
+
+  // Debug: Log initial messages when loading history
+  useEffect(() => {
+    console.log('🔍 Chat component mounted with:', {
+      id,
+      initialMessagesCount: initialMessages.length,
+    });
+    // Log each message separately for better visibility
+    initialMessages.forEach((m, i) => {
+      const textContent = m.parts?.find((p: any) => p.type === 'text')?.text || '';
+      console.log(`📝 Message[${i}]:`, {
+        id: m.id,
+        role: m.role,
+        text: textContent.substring(0, 100),
+      });
+    });
+  }, [id, initialMessages]);
+
 
   const {
     messages,
@@ -86,6 +106,20 @@ export function Chat({
     onData: (dataPart: any) => {
       console.log('📨 Chat onData received:', dataPart);
       setDataStream((ds: any[] | null) => (ds ? [...ds, dataPart] : []));
+
+      // Handle data-chatId event - update URL to Backend session ID
+      if (dataPart && dataPart.type === 'data-chatId' && dataPart.data) {
+        try {
+          const parsed = JSON.parse(dataPart.data);
+          if (parsed.chatId && parsed.chatId !== id) {
+            console.log('🔄 Updating URL to Backend session ID:', parsed.chatId);
+            setActualChatId(parsed.chatId);
+            window.history.replaceState({}, '', `/chat/${parsed.chatId}`);
+          }
+        } catch (e) {
+          console.error('Failed to parse chatId data:', e);
+        }
+      }
     },
     onFinish: () => {
       console.log('🏁 Chat onFinish fired');
@@ -129,13 +163,8 @@ export function Chat({
 
       setHasAppendedQuery(true);
 
-      console.log('🎯 Chat replacing URL history:', {
-        oldUrl: window.location.href,
-        newUrl: `/chat/${id}`,
-        action: 'history-replace',
-      });
-
-      window.history.replaceState({}, '', `/chat/${id}`);
+      // Note: URL update is now handled in onData when Backend session ID is received
+      console.log('🎯 Chat message sent, waiting for Backend session ID');
     }
   }, [query, sendMessage, hasAppendedQuery, id]);
 

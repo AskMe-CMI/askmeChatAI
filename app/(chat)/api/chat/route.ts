@@ -225,30 +225,41 @@ export async function POST(request: Request) {
           .map((p: any) => p.text)
           .join('') || 'New Chat';
 
-        // Check if this is a new chat - create session on Backend
+        // Check if the ID is already a Backend session ID (numeric string from history)
         let backendSessionId: number | null = null;
-        const existingChat = await getChatById({ id });
+        let isNewSession = false;
+        const isNumericId = /^\d+$/.test(id);
 
-        if (!existingChat?.backendSessionId) {
-          // Create new session on Backend
-          const title = await generateTitleFromUserMessage({ message });
-          const backendSession = await createBackendSession(title, selectedChatModel);
-
-          if (backendSession) {
-            backendSessionId = backendSession.id;
-            // Update local chat with backend session ID
-            await saveChat({
-              id,
-              userId: session.user.email,
-              title,
-              visibility: selectedVisibilityType,
-              backendSessionId: backendSession.id,
-            });
-            console.log('✅ Created Backend session:', backendSessionId);
-          }
+        if (isNumericId) {
+          // ID is already a Backend session ID (user clicked from history)
+          backendSessionId = parseInt(id, 10);
+          console.log('📎 Using Backend session ID from URL:', backendSessionId);
         } else {
-          backendSessionId = existingChat.backendSessionId;
-          console.log('📎 Using existing Backend session:', backendSessionId);
+          // Check local DB for existing chat with backend session ID
+          const existingChat = await getChatById({ id });
+
+          if (existingChat?.backendSessionId) {
+            backendSessionId = existingChat.backendSessionId;
+            console.log('📎 Using existing Backend session from local DB:', backendSessionId);
+          } else {
+            // Create new session on Backend
+            isNewSession = true;
+            const title = await generateTitleFromUserMessage({ message });
+            const backendSession = await createBackendSession(title, selectedChatModel);
+
+            if (backendSession) {
+              backendSessionId = backendSession.id;
+              // Update local chat with backend session ID
+              await saveChat({
+                id,
+                userId: session.user.email,
+                title,
+                visibility: selectedVisibilityType,
+                backendSessionId: backendSession.id,
+              });
+              console.log('✅ Created new Backend session:', backendSessionId);
+            }
+          }
         }
 
         console.log('📋 Backend API Request:', {
@@ -256,52 +267,50 @@ export async function POST(request: Request) {
           messageCount: uiMessages.length,
           userId: session.user.id,
           backendSessionId,
+          isNewSession,
         });
 
-        // Convert UI messages to chat format
-        const chatMessages = convertToChatMessages(uiMessages);
+        // Use the unified Backend endpoint that handles both AI call and message saving
+        // This endpoint: sends to AI, saves user message, saves AI response - all in one call
+        const { sendMessageToSession } = await import('@/lib/ai/backend-provider');
 
-        // Send request to backend API (non-streaming for testing)
-        const backendResponse = await sendChatCompletion(
-          selectedChatModel,
-          chatMessages,
-          false // Disabled streaming to test
-        );
-
-        // Non-streaming response handling
-        const jsonResponse = await backendResponse.json();
-        console.log('📨 Backend API JSON Response received');
-
-        const content = jsonResponse.choices?.[0]?.message?.content || '';
-
-        // Save messages to Backend session if we have a session ID
-        if (backendSessionId) {
-          // Save user message
-          await addMessageToSession(backendSessionId, 'user', userMessageText, selectedChatModel);
-          // Save assistant message
-          await addMessageToSession(backendSessionId, 'assistant', content, selectedChatModel);
-          console.log('✅ Messages saved to Backend session:', backendSessionId);
+        if (!backendSessionId) {
+          console.error('❌ No backend session ID available');
+          return new ChatSDKError('bad_request:api', 'Failed to create backend session').toResponse();
         }
 
-        // Save the assistant message to local DB
-        const assistantMessageId = generateUUID();
-        await saveMessages({
-          messages: [
-            {
-              id: assistantMessageId,
-              role: 'assistant' as const,
-              parts: [{ type: 'text', text: content }],
-              createdAt: new Date(),
-              attachments: [],
-              chatId: id,
-            },
-          ],
+        const sessionResponse = await sendMessageToSession(
+          backendSessionId,
+          userMessageText,
+          selectedChatModel
+        );
+
+        if (!sessionResponse) {
+          console.error('❌ Failed to send message to Backend session');
+          return new ChatSDKError('bad_request:api', 'Failed to send message to backend').toResponse();
+        }
+
+        const content = sessionResponse.ai_message.content;
+        console.log('📨 Backend session response received:', {
+          sessionId: sessionResponse.session_id,
+          userMessageId: sessionResponse.user_message.id,
+          aiMessageId: sessionResponse.ai_message.id,
+          aiContentLength: content.length,
         });
 
         // Create a proper UI message stream response
         const messageId = generateUUID();
         const stream = createUIMessageStream({
           execute: ({ writer }: { writer: any }) => {
+            // Send the Backend session ID to frontend for URL update
+            if (backendSessionId) {
+              writer.write({
+                type: 'data-chatId',
+                data: JSON.stringify({ chatId: String(backendSessionId) }),
+              });
+              console.log('📤 Sent chatId to frontend:', backendSessionId);
+            }
+
             // Start text block
             writer.write({
               type: 'text-start',
@@ -319,6 +328,7 @@ export async function POST(request: Request) {
             writer.write({
               type: 'text-end',
               id: messageId,
+
             });
 
             // Write finish event

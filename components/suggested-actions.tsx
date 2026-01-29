@@ -58,8 +58,7 @@ function PureSuggestedActions({
           <Button
             variant="ghost"
             onClick={async () => {
-              window.history.replaceState({}, '', `/chat/${chatId}`);
-
+              // Note: URL update is handled in chat.tsx onData when Backend session ID is received
               sendMessage({
                 role: 'user',
                 parts: [{ type: 'text', text: suggestedAction.action }],
