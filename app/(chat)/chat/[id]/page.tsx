@@ -2,55 +2,10 @@ import { auth } from '@/app/(auth)/auth';
 import { Chat } from '@/components/chat';
 import { DataStreamHandler } from '@/components/data-stream-handler';
 import { DEFAULT_CHAT_MODEL } from '@/lib/ai/models';
+import { notFound, redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 
-// Declare Node.js globals
-declare const process: any;
-declare const require: any;
 
-// Server-side utility functions
-const getCookies = async () => {
-  if (typeof window !== 'undefined') {
-    return { get: () => null };
-  }
-
-  try {
-    const NextHeaders = require('next/headers');
-    return NextHeaders.cookies();
-  } catch (e) {
-    console.error('Error importing next/headers:', e);
-    return { get: () => null };
-  }
-};
-
-const notFound = () => {
-  if (typeof window !== 'undefined') {
-    window.location.href = '/404';
-    return;
-  }
-
-  try {
-    const NextNavigation = require('next/navigation');
-    return NextNavigation.notFound();
-  } catch (e) {
-    console.error('Error importing next/navigation notFound:', e);
-    throw new Error('Not found');
-  }
-};
-
-const redirect = (url: string) => {
-  if (typeof window !== 'undefined') {
-    window.location.href = url;
-    return;
-  }
-
-  try {
-    const NextNavigation = require('next/navigation');
-    return NextNavigation.redirect(url);
-  } catch (e) {
-    console.error('Error importing next/navigation redirect:', e);
-    throw new Error('Redirect failed');
-  }
-};
 
 // Fetch chat data from Dify API
 async function getChatFromDify(id: string, userEmail: string) {
@@ -60,7 +15,7 @@ async function getChatFromDify(id: string, userEmail: string) {
       userEmail,
     });
 
-    const cookieStore = await getCookies();
+    const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('session');
 
     console.log(
@@ -69,7 +24,7 @@ async function getChatFromDify(id: string, userEmail: string) {
     );
     const base_url = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
     console.log('Page getChatFromDify - Base URL:', process.env.NEXT_PUBLIC_BASE_URL);
-    
+
     const response = await fetch(
       `${base_url}/api/chat/${id}`,
       {
@@ -170,7 +125,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     areEqual: userEmail === chat.userId,
   });
 
-  const cookieStore = await getCookies();
+  const cookieStore = await cookies();
   const chatModelFromCookie = cookieStore.get('chat-model');
 
   if (!chatModelFromCookie) {

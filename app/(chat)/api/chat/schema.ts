@@ -15,13 +15,14 @@ const filePartSchema = z.object({
 const partSchema = z.union([textPartSchema, filePartSchema]);
 
 export const postRequestBodySchema = z.object({
-  id: z.string().uuid(),
+  // Accept both UUID (new chats) and integer string (Backend API session IDs)
+  id: z.string().min(1),
   message: z.object({
     id: z.string().uuid(),
     role: z.enum(['user']),
     parts: z.array(partSchema),
   }),
-  selectedChatModel: z.enum(['chat-model', 'chat-model-reasoning']),
+  selectedChatModel: z.string().min(1), // Accept any model ID from Backend API
   selectedVisibilityType: z.enum(['public', 'private']),
 });
 

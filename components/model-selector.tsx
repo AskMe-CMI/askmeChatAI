@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition, useMemo, useOptimistic, useState } from 'react';
+import { startTransition, useEffect, useMemo, useOptimistic, useState } from 'react';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -10,38 +10,85 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { chatModels } from '@/lib/ai/models';
+import { DEFAULT_CHAT_MODEL, type ChatModel, fallbackChatModels } from '@/lib/ai/models';
 import { cn } from '@/lib/utils';
 
 import { CheckCircleFillIcon, ChevronDownIcon } from './icons';
-import { entitlementsByUserType } from '@/lib/ai/entitlements';
-import type { UserPayload } from '@/app/(auth)/auth';
+
+interface BackendModel {
+  id: string;
+  object: string;
+  owned_by: string;
+}
+
+/**
+ * Format model ID to human readable name
+ */
+function formatModelName(modelId: string): string {
+  // Remove prefixes like "ollama/", "hf.co/" etc.
+  const parts = modelId.split('/');
+  const name = parts[parts.length - 1];
+
+  // Clean up the name
+  return name
+    .replace(/:latest$/, '')
+    .replace(/:Q4_K_M$/, '')
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Convert backend model to chat model format
+ */
+function convertToCharModel(backendModel: BackendModel): ChatModel {
+  return {
+    id: backendModel.id,
+    name: formatModelName(backendModel.id),
+    description: `Powered by ${backendModel.owned_by}`,
+  };
+}
 
 export function ModelSelector({
-  session,
   selectedModelId,
   className,
 }: {
-  session: UserPayload;
   selectedModelId: string;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
-  const [optimisticModelId, setOptimisticModelId] =
-    useOptimistic(selectedModelId);
+  const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
+  const [models, setModels] = useState<ChatModel[]>(fallbackChatModels);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const userType = session.type;
-  const { availableChatModelIds } = entitlementsByUserType[userType];
+  // Fetch models from backend on mount
+  useEffect(() => {
+    async function fetchModels() {
+      try {
+        const response = await fetch('/api/models');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.data && Array.isArray(data.data)) {
+            const chatModels = data.data.map(convertToCharModel);
+            setModels(chatModels);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch models:', error);
+        // Keep fallback models
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  const availableChatModels = chatModels.filter((chatModel) =>
-    availableChatModelIds.includes(chatModel.id),
-  );
+    fetchModels();
+  }, []);
 
   const selectedChatModel = useMemo(
     () =>
-      availableChatModels.find(
-        (chatModel) => chatModel.id === optimisticModelId,
-      ),
-    [optimisticModelId, availableChatModels],
+      models.find((chatModel) => chatModel.id === optimisticModelId) ||
+      models[0],
+    [optimisticModelId, models],
   );
 
   return (
@@ -57,13 +104,14 @@ export function ModelSelector({
           data-testid="model-selector"
           variant="outline"
           className="md:px-2 md:h-[34px] bg-white shadow-md hover:bg-white/90 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+          disabled={isLoading}
         >
-          {selectedChatModel?.name}
+          {isLoading ? 'Loading...' : selectedChatModel?.name || 'Select Model'}
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-[300px]">
-        {availableChatModels.map((chatModel) => {
+      <DropdownMenuContent align="start" className="min-w-[300px] max-h-[400px] overflow-y-auto">
+        {models.map((chatModel) => {
           const { id } = chatModel;
 
           return (

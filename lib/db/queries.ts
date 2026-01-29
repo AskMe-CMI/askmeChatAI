@@ -10,6 +10,8 @@ export interface Chat {
   conversationId?: string;
   // optional message id from external providers (e.g., Dify)
   messageId?: string;
+  // Backend API session ID (integer)
+  backendSessionId?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -123,11 +125,11 @@ export async function getChatById({
     requestedId: id,
     foundChat: chat
       ? {
-          id: chat.id,
-          title: chat.title,
-          conversationId: chat.conversationId,
-          userId: chat.userId,
-        }
+        id: chat.id,
+        title: chat.title,
+        conversationId: chat.conversationId,
+        userId: chat.userId,
+      }
       : null,
     totalChatsInMemory: dummyChats.length,
     allChatIds: dummyChats.map((c) => c.id),

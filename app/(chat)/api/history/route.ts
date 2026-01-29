@@ -1,36 +1,32 @@
-import { auth } from '@/app/(auth)/auth';
 import type { NextRequest } from 'next/server';
 import { ChatSDKError } from '@/lib/errors';
+import { getStoredToken } from '@/lib/auth/local-auth';
 
 // Declare Node.js globals
 declare const process: any;
 
-// Dify conversation response type
-interface DifyConversation {
-  id: string;
-  name: string;
-  inputs: Record<string, any>;
-  status: string;
-  introduction: string;
-  created_at: number;
-  updated_at: number;
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+
+// Backend session response type
+interface BackendSession {
+  id: number;
+  title: string;
+  model: string;
+  message_count: number;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string | null;
 }
 
-interface DifyConversationsResponse {
-  limit: number;
-  has_more: boolean;
-  data: DifyConversation[];
-}
-
-// Transform Dify conversation to our Chat format
-function transformDifyToChat(conversation: DifyConversation, userId: string) {
+// Transform backend session to our Chat format
+function transformBackendToChat(session: BackendSession, userId: string) {
   return {
-    id: conversation.id,
-    title: conversation.name || 'Untitled Chat',
+    id: String(session.id), // Convert number to string
+    title: session.title || 'Untitled Chat',
     userId: userId,
-    visibility: 'private' as const, // Dify conversations are private by default
-    createdAt: new Date(conversation.created_at * 1000), // Convert unix timestamp to Date
-    updatedAt: new Date(conversation.updated_at * 1000),
+    visibility: 'private' as const,
+    createdAt: new Date(session.created_at),
+    updatedAt: new Date(session.updated_at),
   };
 }
 
@@ -39,103 +35,79 @@ export async function GET(request: NextRequest) {
 
   const limit = Number.parseInt(searchParams.get('limit') || '20');
   const offset = Number.parseInt(searchParams.get('offset') || '0');
-  const startingAfter = searchParams.get('starting_after');
-  const endingBefore = searchParams.get('ending_before');
 
-  // Support both offset and cursor-based pagination
-  if (startingAfter && endingBefore) {
-    return new ChatSDKError(
-      'bad_request:api',
-      'Only one of starting_after or ending_before can be provided.',
-    ).toResponse();
-  }
+  // Get token from session cookie
+  const token = await getStoredToken();
 
-  const session = await auth();
-  if (!session?.user) {
-    console.log('History API - No session, returning 401');
+  if (!token) {
+    console.log('History API - No token found, returning 401');
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
   try {
-    // Get user email from session (assuming it's available)
-    const userEmail = session.user.email || session.user.id;
-    console.log('History API - User email:', userEmail);
-
-    // Build Dify API URL
-    const difyApiUrl = new URL(
-      '/v1/conversations',
-      process.env.DIFY_BASE_URL || 'https://dify.askme.co.th',
+    // Build Backend API URL
+    const backendUrl = new URL(
+      '/api/chat-history/sessions',
+      BACKEND_API_URL,
     );
-    difyApiUrl.searchParams.set('user', userEmail);
+    // Request more items to handle offset-based pagination
+    const backendLimit = limit + offset;
+    backendUrl.searchParams.set('limit', backendLimit.toString());
 
-    // Use a larger limit for Dify API call and handle pagination manually
-    // if Dify doesn't support offset-based pagination
-    const difyLimit = Math.max(limit + offset, 100); // Get more data to handle offset
-    difyApiUrl.searchParams.set('limit', difyLimit.toString());
+    console.log('History API - Calling Backend URL:', backendUrl.toString());
 
-    // console.log('History API - Calling Dify URL:', difyApiUrl.toString());
-    // console.log('History API - Pagination params:', {
-    //   limit,
-    //   offset,
-    //   startingAfter,
-    //   endingBefore,
-    // });
-
-    // Add cursor-based pagination parameters if provided (fallback)
-    if (startingAfter) {
-      difyApiUrl.searchParams.set('starting_after', startingAfter);
-    }
-    if (endingBefore) {
-      difyApiUrl.searchParams.set('ending_before', endingBefore);
-    }
-
-    // Call Dify API
-    // console.log('History API - Making request to Dify...');
-    const response = await fetch(difyApiUrl.toString(), {
+    // Call Backend API
+    const response = await fetch(backendUrl.toString(), {
       headers: {
-        Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
+      if (response.status === 401) {
+        return new ChatSDKError('unauthorized:chat').toResponse();
+      }
       throw new Error(
-        `Dify API error: ${response.status} ${response.statusText}`,
+        `Backend API error: ${response.status} ${response.statusText}`,
       );
     }
 
-    const difyData: DifyConversationsResponse = await response.json();
-    // console.log('History API - Dify response:', {
-    //   totalItems: difyData.data.length,
-    //   hasMore: difyData.has_more,
-    // });
+    const backendData: BackendSession[] = await response.json();
+    console.log('History API - Backend response:', {
+      totalItems: backendData.length,
+    });
 
-    // Transform Dify data to our chat format
-    const allChats = difyData.data.map((conversation) =>
-      transformDifyToChat(conversation, userEmail),
+    // Transform backend data to our chat format
+    // Use a placeholder userId since backend handles user filtering
+    const allChats = backendData.map((session) =>
+      transformBackendToChat(session, 'backend-user'),
     );
 
-    // Apply offset and limit for manual pagination
+    // Apply offset and limit for pagination
     const paginatedChats = allChats.slice(offset, offset + limit);
-    const hasMore = offset + limit < allChats.length || difyData.has_more;
+    const hasMore = offset + limit < allChats.length;
 
-    // console.log('History API - Pagination result:', {
-    //   offset,
-    //   limit,
-    //   totalChats: allChats.length,
-    //   returnedChats: paginatedChats.length,
-    //   hasMore,
-    // });
+    console.log('History API - Pagination result:', {
+      offset,
+      limit,
+      totalChats: allChats.length,
+      returnedChats: paginatedChats.length,
+      hasMore,
+    });
 
     return Response.json({
       chats: paginatedChats,
       hasMore,
     });
   } catch (error) {
-    console.error('Error fetching conversations from Dify:', error);
-    return new ChatSDKError(
-      'bad_request:api',
-      'Failed to fetch chat history from Dify API',
-    ).toResponse();
+    console.error('❌ Backend API error:', error);
+
+    // Return empty data on error
+    return Response.json({
+      chats: [],
+      hasMore: false,
+      _error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }

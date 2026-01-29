@@ -29,6 +29,7 @@ import { getWeather } from '@/lib/ai/tools/get-weather';
 import { isProductionEnvironment } from '@/lib/constants';
 import { myProvider } from '@/lib/ai/providers';
 import { difyModel } from '@/lib/ai/dify-provider';
+import { sendChatCompletion, convertToChatMessages, createBackendSession, addMessageToSession } from '@/lib/ai/backend-provider';
 import { entitlementsByUserType } from '@/lib/ai/entitlements';
 import { postRequestBodySchema, type PostRequestBody } from './schema';
 import { geolocation } from '@vercel/functions';
@@ -71,8 +72,11 @@ export async function POST(request: Request) {
 
   try {
     const json = await request.json();
+    console.log('📥 Chat API - Received body:', JSON.stringify(json).substring(0, 200));
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+    console.log('✅ Chat API - Body validated successfully');
+  } catch (error) {
+    console.error('❌ Chat API - Body parse/validation error:', error);
     return new ChatSDKError('bad_request:api').toResponse();
   }
 
@@ -119,10 +123,10 @@ export async function POST(request: Request) {
       requestedId: id,
       foundChat: chat
         ? {
-            id: chat.id,
-            userId: chat.userId,
-            title: chat.title,
-          }
+          id: chat.id,
+          userId: chat.userId,
+          title: chat.title,
+        }
         : null,
       sessionUserEmail: session.user.email,
     });
@@ -205,6 +209,155 @@ export async function POST(request: Request) {
     const streamId = generateUUID();
     await createStreamId({ streamId, chatId: id });
 
+    // Check if Backend API is enabled (priority over Dify)
+    const USE_BACKEND_API = process.env.USE_BACKEND_API === 'true';
+
+    if (USE_BACKEND_API) {
+      try {
+        console.log(
+          '🚀 Using Backend API provider for chat with user:',
+          session.user.email || session.user.id,
+        );
+
+        // Get message text for creating session title
+        const userMessageText = message.parts
+          ?.filter((p: any) => p.type === 'text')
+          .map((p: any) => p.text)
+          .join('') || 'New Chat';
+
+        // Check if this is a new chat - create session on Backend
+        let backendSessionId: number | null = null;
+        const existingChat = await getChatById({ id });
+
+        if (!existingChat?.backendSessionId) {
+          // Create new session on Backend
+          const title = await generateTitleFromUserMessage({ message });
+          const backendSession = await createBackendSession(title, selectedChatModel);
+
+          if (backendSession) {
+            backendSessionId = backendSession.id;
+            // Update local chat with backend session ID
+            await saveChat({
+              id,
+              userId: session.user.email,
+              title,
+              visibility: selectedVisibilityType,
+              backendSessionId: backendSession.id,
+            });
+            console.log('✅ Created Backend session:', backendSessionId);
+          }
+        } else {
+          backendSessionId = existingChat.backendSessionId;
+          console.log('📎 Using existing Backend session:', backendSessionId);
+        }
+
+        console.log('📋 Backend API Request:', {
+          model: selectedChatModel,
+          messageCount: uiMessages.length,
+          userId: session.user.id,
+          backendSessionId,
+        });
+
+        // Convert UI messages to chat format
+        const chatMessages = convertToChatMessages(uiMessages);
+
+        // Send request to backend API (non-streaming for testing)
+        const backendResponse = await sendChatCompletion(
+          selectedChatModel,
+          chatMessages,
+          false // Disabled streaming to test
+        );
+
+        // Non-streaming response handling
+        const jsonResponse = await backendResponse.json();
+        console.log('📨 Backend API JSON Response received');
+
+        const content = jsonResponse.choices?.[0]?.message?.content || '';
+
+        // Save messages to Backend session if we have a session ID
+        if (backendSessionId) {
+          // Save user message
+          await addMessageToSession(backendSessionId, 'user', userMessageText, selectedChatModel);
+          // Save assistant message
+          await addMessageToSession(backendSessionId, 'assistant', content, selectedChatModel);
+          console.log('✅ Messages saved to Backend session:', backendSessionId);
+        }
+
+        // Save the assistant message to local DB
+        const assistantMessageId = generateUUID();
+        await saveMessages({
+          messages: [
+            {
+              id: assistantMessageId,
+              role: 'assistant' as const,
+              parts: [{ type: 'text', text: content }],
+              createdAt: new Date(),
+              attachments: [],
+              chatId: id,
+            },
+          ],
+        });
+
+        // Create a proper UI message stream response
+        const messageId = generateUUID();
+        const stream = createUIMessageStream({
+          execute: ({ writer }: { writer: any }) => {
+            // Start text block
+            writer.write({
+              type: 'text-start',
+              id: messageId,
+            });
+
+            // Write the assistant message text
+            writer.write({
+              type: 'text-delta',
+              id: messageId,
+              delta: content,
+            });
+
+            // End text block
+            writer.write({
+              type: 'text-end',
+              id: messageId,
+            });
+
+            // Write finish event
+            writer.write({
+              type: 'finish',
+            });
+          },
+        });
+
+        return new Response(
+          stream.pipeThrough(new JsonToSseTransformStream()),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache',
+              Connection: 'keep-alive',
+            },
+          },
+        );
+      } catch (err: any) {
+        console.error('❌ Backend API Error:', {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+        });
+
+        // Check for spend limit error
+        if (err.message?.includes('Spend limit exceeded')) {
+          return new ChatSDKError(
+            'rate_limit:chat',
+            'Spend limit exceeded. Please contact administrator.',
+          ).toResponse();
+        }
+
+        return new ChatSDKError('offline:chat', err.message).toResponse();
+      }
+    }
+
+
     // Use AI SDK with Dify provider for better integration
     const DIFY_BASE_URL = process.env.DIFY_BASE_URL;
     const DIFY_API_KEY = process.env.DIFY_API_KEY;
@@ -279,10 +432,10 @@ export async function POST(request: Request) {
           chatFound: !!latestChat,
           chatData: latestChat
             ? {
-                id: latestChat.id,
-                title: latestChat.title,
-                conversationId: latestChat.conversationId,
-              }
+              id: latestChat.id,
+              title: latestChat.title,
+              conversationId: latestChat.conversationId,
+            }
             : null,
         });
 
@@ -506,11 +659,11 @@ export async function POST(request: Request) {
             selectedChatModel === 'chat-model-reasoning'
               ? []
               : [
-                  'getWeather',
-                  'createDocument',
-                  'updateDocument',
-                  'requestSuggestions',
-                ],
+                'getWeather',
+                'createDocument',
+                'updateDocument',
+                'requestSuggestions',
+              ],
           experimental_transform: smoothStream({ chunking: 'word' }),
           tools: {
             getWeather,
@@ -592,93 +745,52 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
-  let chat = await getChatById({ id });
+  // Get token for Backend API
+  const { getStoredToken } = await import('@/lib/auth/local-auth');
+  const token = await getStoredToken();
 
-  // If chat not found in local DB, try to get it from Dify API
-  if (!chat) {
-    console.log(
-      '🔍 Chat not found in local DB, checking Dify API for conversation:',
-      id,
+  if (!token) {
+    return new ChatSDKError('unauthorized:chat').toResponse();
+  }
+
+  const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+
+  try {
+    console.log('🗑️ Deleting chat session from Backend API:', {
+      sessionId: id,
+    });
+
+    // Delete from Backend API
+    const backendDeleteResponse = await fetch(
+      `${BACKEND_API_URL}/api/chat-history/sessions/${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      },
     );
 
-    try {
-      // Try to fetch messages from Dify API using the chat ID as conversation ID
-      const difyMessagesResponse = await fetch(
-        `https://dify.askme.co.th/v1/messages?conversation_id=${id}&user=${encodeURIComponent(session.user.email)}&limit=1`,
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
-          },
-        },
-      );
-
-      if (difyMessagesResponse.ok) {
-        console.log(
-          '✅ Found conversation in Dify API, treating as valid chat',
-        );
-        // Create a minimal chat object for deletion
-        chat = {
-          id,
-          userId: session.user.email,
-          title: `Chat ${id.substring(0, 8)}`,
-          conversationId: id,
-          visibility: 'private' as const,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        };
-      }
-    } catch (error) {
-      console.error('❌ Error checking Dify API:', error);
-    }
-  }
-
-  if (!chat || chat.userId !== session.user.email) {
-    console.error('🚫 Chat access denied or not found:', {
-      chatFound: !!chat,
-      chatUserId: chat?.userId,
-      sessionUserEmail: session.user.email,
-      requestedId: id,
-    });
-    return new ChatSDKError('forbidden:chat').toResponse();
-  }
-
-  // 🗑️ Delete from Dify API if conversation ID exists
-  if (chat.conversationId) {
-    try {
-      console.log('🗑️ Deleting Dify conversation:', {
-        conversationId: chat.conversationId,
-        user: session.user.email,
+    if (backendDeleteResponse.ok) {
+      console.log('✅ Backend session deleted successfully');
+      return Response.json({ message: 'Chat deleted successfully' }, { status: 200 });
+    } else {
+      console.error('❌ Backend delete failed:', {
+        status: backendDeleteResponse.status,
+        statusText: backendDeleteResponse.statusText,
       });
 
-      const difyDeleteResponse = await fetch(
-        `https://dify.askme.co.th/v1/conversations/${chat.conversationId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${process.env.DIFY_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user: session.user.email,
-          }),
-        },
-      );
-
-      if (difyDeleteResponse.ok) {
-        console.log('✅ Dify conversation deleted successfully');
-      } else {
-        console.error('❌ Dify delete failed:', {
-          status: difyDeleteResponse.status,
-          statusText: difyDeleteResponse.statusText,
-        });
+      // If 404, chat might not exist - still return success
+      if (backendDeleteResponse.status === 404) {
+        return Response.json({ message: 'Chat not found or already deleted' }, { status: 200 });
       }
-    } catch (error) {
-      console.error('❌ Error deleting Dify conversation:', error);
-      // Continue with local deletion anyway
+
+      return new ChatSDKError('forbidden:chat').toResponse();
     }
+  } catch (error) {
+    console.error('❌ Error deleting from Backend API:', error);
+    return new ChatSDKError('offline:chat').toResponse();
   }
-
-  const deletedChat = await deleteChatById({ id });
-
-  return Response.json(deletedChat, { status: 200 });
 }
+
