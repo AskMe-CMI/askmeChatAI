@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: boolean) => void }) {
+export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent: boolean) => void }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isAccepted, setIsAccepted] = useState(false);
     const [isAcknowledged, setIsAcknowledged] = useState(false);
@@ -13,8 +13,8 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
 
     const handleAccept = () => {
         if (isAccepted && isAcknowledged) {
-            localStorage.setItem('pdpa-consent', 'true');
-            localStorage.setItem('pdpa-consent-date', new Date().toISOString());
+            localStorage.setItem('pdpa-consent-alt', 'true');
+            localStorage.setItem('pdpa-consent-alt-date', new Date().toISOString());
 
             if (onAccept) {
                 onAccept(true);
@@ -41,9 +41,9 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-foreground">
-                            นโยบายความเป็นส่วนตัวและการขอความยินยอม
+                            นโยบายความเป็นส่วนตัวและการขอความยินยอม (ฉบับที่ 2)
                         </h2>
-                        <p className="text-sm text-muted-foreground mt-1">สำหรับบริการ [Cloud Drive / AI Gateway] - Demo Version</p>
+                        <p className="text-sm text-muted-foreground mt-1">สำหรับบริการ [ระบุชื่อบริการ] - Demo Version</p>
                     </div>
                 </div>
 
@@ -173,7 +173,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                     className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
                                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                                    ข้าพเจ้าให้ความยินยอมแก่บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด ในการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัวฉบับนี้ เพื่อวัตถุประสงค์ในการให้บริการ [Cloud Drive / AI Gateway] Demo
+                                    ข้าพเจ้าให้ความยินยอมแก่บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด ในการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัวฉบับนี้ เพื่อวัตถุประสงค์ในการให้บริการ [ระบุชื่อบริการ] Demo
                                 </span>
                             </label>
 
