@@ -25,10 +25,14 @@ function transformBackendToChat(session: BackendSession, userId: string) {
     title: session.title || 'Untitled Chat',
     userId: userId,
     visibility: 'private' as const,
+    model: session.model,
+    messageCount: session.message_count,
+    lastMessageAt: session.last_message_at ? new Date(session.last_message_at) : null,
     createdAt: new Date(session.created_at),
     updatedAt: new Date(session.updated_at),
   };
 }
+
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;

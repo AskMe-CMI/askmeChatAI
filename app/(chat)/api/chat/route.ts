@@ -331,9 +331,15 @@ export async function POST(request: Request) {
 
             });
 
-            // Write finish event
+            // Write finish event with usage data
             writer.write({
               type: 'finish',
+              finishReason: 'stop',
+              usage: sessionResponse.usage ? {
+                promptTokens: sessionResponse.usage.prompt_tokens,
+                completionTokens: sessionResponse.usage.completion_tokens,
+                totalTokens: sessionResponse.usage.total_tokens,
+              } : undefined,
             });
           },
         });

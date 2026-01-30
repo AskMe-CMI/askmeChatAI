@@ -12,6 +12,12 @@ export interface Chat {
   messageId?: string;
   // Backend API session ID (integer)
   backendSessionId?: number;
+  // Model used for the chat
+  model?: string;
+  // Total number of messages in the chat
+  messageCount?: number;
+  // Timestamp of the last message
+  lastMessageAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

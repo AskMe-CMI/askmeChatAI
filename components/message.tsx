@@ -21,6 +21,43 @@ import { useDataStream } from './data-stream-provider';
 // Type narrowing is handled by TypeScript's control flow analysis
 // The AI SDK provides proper discriminated unions for tool calls
 
+// Format exact date and time (e.g., "29 ม.ค. 2569 17:46")
+function formatDateTime(dateInput: Date | string | null | undefined): string {
+  if (!dateInput) return '';
+
+  // Convert string to Date if needed
+  let date: Date;
+  if (typeof dateInput === 'string') {
+    const isISOFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateInput);
+    const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(dateInput);
+    if (isISOFormat && !hasTimezone) {
+      date = new Date(dateInput + 'Z');
+    } else {
+      date = new Date(dateInput);
+    }
+  } else {
+    date = dateInput;
+  }
+
+  if (isNaN(date.getTime())) return '';
+
+  try {
+    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
+      calendar: 'buddhist',
+      numberingSystem: 'latn',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Bangkok'
+    }).format(date);
+  } catch (error) {
+    return date.toLocaleString('th-TH');
+  }
+}
+
 const PurePreviewMessage = ({
   chatId,
   message,
@@ -307,6 +344,22 @@ const PurePreviewMessage = ({
                 }
               }
             })}
+
+            <div className="flex flex-row gap-2 items-center justify-end w-full px-1 mt-1">
+              {message.createdAt && (
+                <div className="text-[10px] text-muted-foreground/60 select-none">
+                  {formatDateTime(message.createdAt)}
+                </div>
+              )}
+              {message.role === 'assistant' && message.usage && (
+                <>
+                  <div className="text-[10px] text-muted-foreground/60 select-none">•</div>
+                  <div className="text-[10px] text-muted-foreground/60 select-none">
+                    {message.usage.total_tokens || 0} tokens
+                  </div>
+                </>
+              )}
+            </div>
 
             {!isReadonly && (
               <MessageActions

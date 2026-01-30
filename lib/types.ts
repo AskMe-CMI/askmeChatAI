@@ -23,6 +23,11 @@ export interface DifyProviderMetadata {
 
 export const messageMetadataSchema = z.object({
   createdAt: z.string(),
+  usage: z.object({
+    prompt_tokens: z.number(),
+    completion_tokens: z.number(),
+    total_tokens: z.number(),
+  }).optional(),
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;

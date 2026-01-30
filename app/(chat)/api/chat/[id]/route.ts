@@ -33,6 +33,11 @@ function transformBackendMessageToUI(message: BackendMessage) {
     parts: [{ type: 'text', text: message.content }],
     attachments: [],
     createdAt: new Date(message.created_at),
+    usage: message.tokens ? {
+      prompt_tokens: 0, // Backend logic might not separate them in list view, assuming total or unavailable
+      completion_tokens: message.tokens, // Assigning total to completion or just total
+      total_tokens: message.tokens,
+    } : undefined,
   };
 }
 
