@@ -1,6 +1,7 @@
 'use client';
 
 import { startTransition, useEffect, useMemo, useOptimistic, useState } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 import { saveChatModelAsCookie } from '@/app/(chat)/actions';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,8 @@ export function ModelSelector({
   const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
   const [models, setModels] = useState<ChatModel[]>(fallbackChatModels);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Fetch models from backend on mount
   useEffect(() => {
@@ -118,13 +121,20 @@ export function ModelSelector({
             <DropdownMenuItem
               data-testid={`model-selector-item-${id}`}
               key={id}
-              onSelect={() => {
+              onSelect={async () => {
                 setOpen(false);
 
+                // Update optimistic UI immediately
                 startTransition(() => {
                   setOptimisticModelId(id);
-                  saveChatModelAsCookie(id);
                 });
+
+                // Wait for cookie to be set on server
+                await saveChatModelAsCookie(id);
+
+                // Context Isolation: Force hard immediate redirect to new chat
+                // This ensures all client state is cleared and new model cookie is used
+                window.location.href = '/';
               }}
               data-active={id === optimisticModelId}
               asChild

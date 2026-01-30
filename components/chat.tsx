@@ -94,7 +94,7 @@ export function Chat({
       }: { messages: any[]; id: string; body?: any }) {
         return {
           body: {
-            id,
+            id: actualChatId,
             message: messages.at(-1),
             selectedChatModel: initialChatModel,
             selectedVisibilityType: visibilityType,

@@ -103,6 +103,7 @@ export async function GET(
       id: String(sessionData.id),
       title: sessionData.title || 'Untitled Chat',
       userId: userEmail,
+      model: sessionData.model,
       visibility: 'private' as const,
       createdAt: new Date(sessionData.created_at),
       updatedAt: new Date(sessionData.updated_at),

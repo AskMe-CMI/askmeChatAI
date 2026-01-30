@@ -9,6 +9,8 @@ import {
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 
+const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+
 // Declare Node.js globals
 declare const process: any;
 import {
@@ -279,8 +281,37 @@ export async function POST(request: Request) {
           return new ChatSDKError('bad_request:api', 'Failed to create backend session').toResponse();
         }
 
+        // Check for model mismatch and create new session if needed
+        let finalSessionId = backendSessionId;
+
+        // Get token for Backend API
+        const { getStoredToken } = await import('@/lib/auth/local-auth');
+        const token = await getStoredToken();
+
+        try {
+          const sessionCheckRes = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${backendSessionId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (sessionCheckRes.ok) {
+            const currentSession = await sessionCheckRes.json();
+            if (currentSession.model !== selectedChatModel) {
+              console.log('🔄 Model changed from', currentSession.model, 'to', selectedChatModel, '- Creating NEW session');
+              const { createBackendSession } = await import('@/lib/ai/backend-provider');
+              const newTitle = userMessageText.substring(0, 50) || 'New Chat';
+              const newSession = await createBackendSession(newTitle, selectedChatModel);
+              if (newSession) {
+                finalSessionId = newSession.id;
+                console.log('✨ Created new session for model switch:', finalSessionId);
+              }
+            }
+          }
+        } catch (checkErr) {
+          console.warn('⚠️ Failed to check session model:', checkErr);
+        }
+
         const sessionResponse = await sendMessageToSession(
-          backendSessionId,
+          finalSessionId,
           userMessageText,
           selectedChatModel
         );
@@ -303,12 +334,21 @@ export async function POST(request: Request) {
         const stream = createUIMessageStream({
           execute: ({ writer }: { writer: any }) => {
             // Send the Backend session ID to frontend for URL update
-            if (backendSessionId) {
+            // ALWAYS send this if we have a valid session ID, so frontend can update URL if it changed
+            if (sessionResponse.session_id) {
               writer.write({
                 type: 'data-chatId',
-                data: JSON.stringify({ chatId: String(backendSessionId) }),
+                data: JSON.stringify({ chatId: String(sessionResponse.session_id) }),
               });
-              console.log('📤 Sent chatId to frontend:', backendSessionId);
+              console.log('📤 Sent chatId to frontend:', sessionResponse.session_id);
+            }
+
+            // Send usage as a custom data event since 'finish' event implies strict schema
+            if (sessionResponse.usage) {
+              writer.write({
+                type: 'data-token-usage',
+                data: JSON.stringify(sessionResponse.usage),
+              });
             }
 
             // Start text block
@@ -331,15 +371,9 @@ export async function POST(request: Request) {
 
             });
 
-            // Write finish event with usage data
+            // Write finish event - clean without extra keys to avoid validation error
             writer.write({
               type: 'finish',
-              finishReason: 'stop',
-              usage: sessionResponse.usage ? {
-                promptTokens: sessionResponse.usage.prompt_tokens,
-                completionTokens: sessionResponse.usage.completion_tokens,
-                totalTokens: sessionResponse.usage.total_tokens,
-              } : undefined,
             });
           },
         });
