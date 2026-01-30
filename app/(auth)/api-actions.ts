@@ -2,7 +2,36 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { signInWithAPI, signOutFromAPI } from '@/lib/auth/local-auth';
+import { signInWithAPI, signOutFromAPI, getStoredToken } from '@/lib/auth/local-auth';
+
+// Tpyes for Credit/Token Usage
+export interface TokenUsage {
+  used: number;
+  limit: number;
+  remaining: number;
+  percentage_used: number;
+  expiry_date: string | null;
+}
+
+export interface UsageDetails {
+  request_count: number;
+  spend: number;
+}
+
+export interface UserStatus {
+  is_active: boolean;
+  is_blocked: boolean;
+  limit_reached: boolean;
+  limit_expired: boolean;
+}
+
+export interface UsageStatsResponse {
+  user_id: string;
+  email: string;
+  tokens: TokenUsage;
+  usage: UsageDetails;
+  status: UserStatus;
+}
 
 const authFormSchema = z.object({
   email: z.string().email(),
@@ -188,5 +217,47 @@ export async function logoutFromBackendAPI(): Promise<void> {
     revalidatePath('/');
   } catch (error) {
     console.error('Logout action error:', error);
+  }
+}
+
+/**
+ * Get usage stats from backend API
+ */
+export async function getUsageStatsAction(): Promise<{ success: boolean; data?: UsageStatsResponse; message?: string }> {
+  try {
+    const token = await getStoredToken();
+
+    if (!token) {
+      return {
+        success: false,
+        message: 'Not authenticated',
+      };
+    }
+
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/usage/stats`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'accept': 'application/json'
+      },
+      cache: 'no-store' // Ensure fresh data
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return { success: false, message: 'Session expired' };
+      }
+      return { success: false, message: `Failed to fetch stats: ${response.status}` };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+
+  } catch (error) {
+    console.error('Get usage stats error:', error);
+    return {
+      success: false,
+      message: 'Failed to fetch usage statistics',
+    };
   }
 }

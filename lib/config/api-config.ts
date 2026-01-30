@@ -41,6 +41,11 @@ export const API_ENDPOINTS = {
     CHANGE_PASSWORD: `${API_CONFIG.BACKEND_BASE_URL}/auth/change-password`,
   },
 
+  // Usage endpoints
+  USAGE: {
+    STATS: `${API_CONFIG.BACKEND_BASE_URL}/usage/stats`,
+  },
+
   // Mock authentication endpoints (for development)
   MOCK: {
     AUTH: {

@@ -9,18 +9,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoaderIcon } from '@/components/icons';
-
-// Mock data - will be replaced with real API when backend is ready
-const MOCK_CREDITS = {
-    used: 63500,
-    limit: 100000,
-    remaining: 36500,
-    resetDate: '2026-02-01',
-};
+import { getUsageStatsAction, type UsageStatsResponse } from '@/app/(auth)/api-actions';
+import { toast } from 'sonner';
 
 export function CreditCheckButton() {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [stats, setStats] = useState<UsageStatsResponse | null>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -53,18 +48,26 @@ export function CreditCheckButton() {
         setIsLoading(true);
         setIsOpen(true);
 
-        // TODO: Replace with actual API call
-        // Simulate loading delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        try {
+            const result = await getUsageStatsAction();
 
-        setIsLoading(false);
+            if (result.success && result.data) {
+                setStats(result.data);
+            } else {
+                toast.error(result.message || 'Failed to fetch credit usage');
+                // Optional: keep panel open to show error state or close it? 
+                // Currently keeping it open but with no data it might look empty if we don't handle it.
+                // But we will handle "no stats" in render.
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats', error);
+            toast.error('An error occurred while fetching credits');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    // TODO: Replace with useSWR when API is ready
-    const credits = MOCK_CREDITS;
-    const percentage = (credits.used / credits.limit) * 100;
-
-    // Color based on remaining percentage
+    const percentage = stats ? stats.tokens.percentage_used : 0;
     const remainingPercent = 100 - percentage;
 
     const getStatusColor = () => {
@@ -108,8 +111,12 @@ export function CreditCheckButton() {
                             </div>
                             <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
                         </div>
-                    ) : (
+                    ) : stats ? (
                         <>
+                            {/* User Info (Optional) */}
+                            {/* <div className="text-xs text-muted-foreground mb-2 truncate">
+                                {stats.email}
+                            </div> */}
 
                             {/* Progress Bar */}
                             <div className="space-y-2 mb-4">
@@ -129,15 +136,27 @@ export function CreditCheckButton() {
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Used</div>
-                                    <div className="text-xl font-bold text-foreground">{formatNumber(credits.used)}</div>
+                                    <div className="text-xl font-bold text-foreground">{formatNumber(stats.tokens.used)}</div>
                                     <div className="text-xs text-muted-foreground">tokens</div>
                                 </div>
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Remaining</div>
                                     <div className={`text-xl font-bold ${getStatusColor()}`}>
-                                        {formatNumber(credits.remaining)}
+                                        {formatNumber(stats.tokens.remaining)}
                                     </div>
                                     <div className="text-xs text-muted-foreground">tokens</div>
+                                </div>
+                            </div>
+
+                            {/* Spend Info */}
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
+                                    <div className="text-xs text-muted-foreground">Request Count</div>
+                                    <div className="text-lg font-semibold text-foreground">{formatNumber(stats.usage.request_count)}</div>
+                                </div>
+                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
+                                    <div className="text-xs text-muted-foreground">Total Spend</div>
+                                    <div className="text-lg font-semibold text-foreground">${stats.usage.spend.toFixed(5)}</div>
                                 </div>
                             </div>
 
@@ -145,24 +164,34 @@ export function CreditCheckButton() {
                             <div className="space-y-1 text-sm border-t pt-3">
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Total Quota</span>
-                                    <span className="text-foreground">{formatNumber(credits.limit)}</span>
+                                    <span className="text-foreground">{formatNumber(stats.tokens.limit)}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Resets on</span>
                                     <span className="text-foreground">
-                                        {new Date(credits.resetDate).toLocaleDateString('en-US', {
-                                            day: 'numeric',
-                                            month: 'short',
-                                            year: 'numeric',
-                                        })}{' '}
-                                        {new Date(credits.resetDate).toLocaleTimeString('en-US', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        })}
+                                        {stats.tokens.expiry_date ? (
+                                            <>
+                                                {new Date(stats.tokens.expiry_date).toLocaleDateString('en-US', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric',
+                                                })}{' '}
+                                                {new Date(stats.tokens.expiry_date).toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                })}
+                                            </>
+                                        ) : (
+                                            'N/A'
+                                        )}
                                     </span>
                                 </div>
                             </div>
                         </>
+                    ) : (
+                        <div className="py-8 text-center text-muted-foreground text-sm">
+                            No usage data available
+                        </div>
                     )}
                 </div>
             )}
