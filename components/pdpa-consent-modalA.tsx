@@ -41,9 +41,9 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
                     </div>
                     <div>
                         <h2 className="text-xl font-bold text-foreground">
-                            นโยบายความเป็นส่วนตัวและการขอความยินยอม (ฉบับที่ 2)
+                            นโยบายความเป็นส่วนตัวและการขอความยินยอม
                         </h2>
-                        <p className="text-sm text-muted-foreground mt-1">สำหรับบริการ [ระบุชื่อบริการ] - Demo Version</p>
+                        <p className="text-sm text-muted-foreground mt-1">สำหรับบริการ Cloud Drive - Demo Version</p>
                     </div>
                 </div>
 
@@ -67,7 +67,7 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
                             <p className="mb-2">บริษัทขอเก็บรวบรวมข้อมูลส่วนบุคคลของท่านเพื่อวัตถุประสงค์ดังต่อไปนี้:</p>
                             <ul className="list-disc list-inside space-y-1 ml-2">
                                 <li>จัดสร้างและบริหารจัดการบัญชีผู้ใช้งาน เพื่อให้ท่านสามารถเข้าถึงและใช้บริการได้อย่างมีประสิทธิภาพ</li>
-                                <li>ให้บริการ AI Chat และ Cloud Storage พร้อมดำเนินการประมวลผลข้อมูล เพื่อการตอบสนองและอำนวยความสะดวกแก่ท่าน</li>
+                                <li>ให้บริการ Cloud Storage พร้อมดำเนินการประมวลผลข้อมูล เพื่อการตอบสนองและอำนวยความสะดวกแก่ท่าน</li>
                                 <li>พัฒนาคุณภาพของบริการ โดยวิเคราะห์ข้อมูลเพื่อปรับปรุงและเพิ่มประสิทธิภาพของระบบให้ดียิ่งขึ้น</li>
                                 <li>ติดต่อสื่อสารกับท่าน เพื่อแจ้งข้อมูลข่าวสาร อัพเดทบริการ หรือดำเนินการแก้ไขปัญหาต่าง ๆ ที่เกี่ยวข้องกับการใช้บริการ</li>
                             </ul>
@@ -173,7 +173,7 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
                                     className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                 />
                                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                                    ข้าพเจ้าให้ความยินยอมแก่บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด ในการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัวฉบับนี้ เพื่อวัตถุประสงค์ในการให้บริการ [ระบุชื่อบริการ] Demo
+                                    ข้าพเจ้าให้ความยินยอมแก่บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด ในการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัวฉบับนี้ เพื่อวัตถุประสงค์ในการให้บริการ Cloud Drive Demo
                                 </span>
                             </label>
 
@@ -210,7 +210,7 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
                             </div>
 
                             <p className="text-xs text-muted-foreground text-center font-semibold">
-                                วันที่มีผลบังคับใช้: {new Date().toLocaleDateString('th-TH')} | เวอร์ชั่น: 1.0 (สำหรับการสาธิต)
+                                วันที่มีผลบังคับใช้: {new Date().toLocaleDateString('th-TH')} | เวอร์ชั่น: 1.0b (สำหรับการสาธิต)
                             </p>
 
                             <p className="text-xs text-muted-foreground text-center">
