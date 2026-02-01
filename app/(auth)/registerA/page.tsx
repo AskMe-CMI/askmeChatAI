@@ -11,11 +11,21 @@ import { registerWithBackendAPI, type RegisterActionState } from '../api-actions
 
 // Local implementation removed in favor of Server Action to avoid CORS issues
 
-import { PDPAConsentModalAlt } from '@/components/pdpa-consent-modal-alt';
+import { PDPAConsentModalAlt } from '@/components/pdpa-consent-modalA';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function RegisterAltPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const [state, formAction] = useActionState<RegisterActionState, FormData>(
         registerWithBackendAPI,
@@ -36,16 +46,13 @@ export default function RegisterAltPage() {
                 description: state.message || 'Please check your input!',
             });
         } else if (state.status === 'success') {
+            setShowSuccessModal(true);
             toast({
                 type: 'success',
                 description: state.message || 'Registration successful!',
             });
-            // Redirect to login after successful registration
-            setTimeout(() => {
-                router.push('/logint');
-            }, 1500);
         }
-    }, [state.status, state.message, router]);
+    }, [state.status, state.message]);
 
     const handleSubmit = (formData: FormData) => {
         setEmail(formData.get('email') as string);
@@ -55,6 +62,21 @@ export default function RegisterAltPage() {
     return (
         <>
             <PDPAConsentModalAlt />
+            <AlertDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>ลงทะเบียนสำเร็จ</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            ระบบได้ส่งรายละเอียดการใช้งานและวันหมดอายุไปทางอีเมลแล้ว
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => router.push('/logint')}>
+                            ไปหน้าเข้าสู่ระบบ
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
             <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
                 <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-8">
                     <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
@@ -144,6 +166,13 @@ export default function RegisterAltPage() {
                         <SubmitButton isSuccessful={state.status === 'success'}>
                             Register
                         </SubmitButton>
+                        <button
+                            type="button"
+                            onClick={() => setShowSuccessModal(true)}
+                            className="bg-red-500 text-white p-2 rounded mt-2 w-full"
+                        >
+                            Test Modal (Debug)
+                        </button>
                     </Form>
 
                     <div className="flex flex-col gap-3 px-4 sm:px-16">
