@@ -138,6 +138,7 @@ export async function registerWithBackendAPI(
       username,
       password,
       full_name: fullName,
+      consent: true,
     };
     console.log('Registration request body:', JSON.stringify(registrationData));
 
