@@ -72,9 +72,16 @@ export async function uploadFileAction(formData: FormData): Promise<UploadResult
 
         const data = await response.json();
 
+        // Prepend backend URL if the returned URL is a relative path
+        let fullUrl = data.url;
+        if (data.url && !data.url.startsWith('http://') && !data.url.startsWith('https://')) {
+            fullUrl = `${BACKEND_API_URL}${data.url.startsWith('/') ? '' : '/'}${data.url}`;
+        }
+
         console.log('✅ File uploaded successfully:', {
             filename: data.filename,
-            url: data.url,
+            originalUrl: data.url,
+            fullUrl: fullUrl,
             contentType: data.content_type,
         });
 
@@ -82,7 +89,7 @@ export async function uploadFileAction(formData: FormData): Promise<UploadResult
             success: true,
             file: {
                 filename: data.filename,
-                url: data.url,
+                url: fullUrl,
                 content_type: data.content_type,
             },
         };

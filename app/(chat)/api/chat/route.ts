@@ -310,10 +310,19 @@ export async function POST(request: Request) {
           console.warn('⚠️ Failed to check session model:', checkErr);
         }
 
+        // Extract attachments from message parts
+        const attachments = message.parts
+          ?.filter((p: any) => p.type === 'file')
+          .map((p: any) => ({
+            type: (p.mediaType?.startsWith('image/') ? 'image' : 'file') as 'image' | 'file',
+            url: p.url,
+          }));
+
         const sessionResponse = await sendMessageToSession(
           finalSessionId,
           userMessageText,
-          selectedChatModel
+          selectedChatModel,
+          attachments
         );
 
         if (!sessionResponse) {
