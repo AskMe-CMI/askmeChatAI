@@ -52,6 +52,14 @@ export function Chat({
   const [input, setInput] = useState<string>('');
   // Track the actual chat ID (Backend session ID) after first message
   const [actualChatId, setActualChatId] = useState<string>(id);
+  // Track the current model for mid-chat model switching
+  const [currentModel, setCurrentModel] = useState<string>(initialChatModel);
+
+  // Handle model change mid-chat
+  const handleModelChange = (newModelId: string) => {
+    console.log('🔄 Model changed mid-chat:', { from: currentModel, to: newModelId });
+    setCurrentModel(newModelId);
+  };
 
   // Debug: Log initial messages when loading history
   useEffect(() => {
@@ -96,7 +104,7 @@ export function Chat({
           body: {
             id: actualChatId,
             message: messages.at(-1),
-            selectedChatModel: initialChatModel,
+            selectedChatModel: currentModel,
             selectedVisibilityType: visibilityType,
             ...body,
           },
@@ -213,10 +221,11 @@ export function Chat({
       <div className="flex flex-col min-w-0 h-dvh">
         <ChatHeader
           chatId={id}
-          selectedModelId={initialChatModel}
+          selectedModelId={currentModel}
           selectedVisibilityType={initialVisibilityType}
           isReadonly={isReadonly}
           session={sessionUser as any}
+          onModelChange={handleModelChange}
         />
 
         <Messages

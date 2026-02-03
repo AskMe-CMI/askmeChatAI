@@ -54,8 +54,10 @@ function convertToCharModel(backendModel: BackendModel): ChatModel {
 export function ModelSelector({
   selectedModelId,
   className,
+  onModelChange,
 }: {
   selectedModelId: string;
+  onModelChange?: (modelId: string) => void;
 } & React.ComponentProps<typeof Button>) {
   const [open, setOpen] = useState(false);
   const [optimisticModelId, setOptimisticModelId] = useOptimistic(selectedModelId);
@@ -132,9 +134,13 @@ export function ModelSelector({
                 // Wait for cookie to be set on server
                 await saveChatModelAsCookie(id);
 
-                // Context Isolation: Force hard immediate redirect to new chat
-                // This ensures all client state is cleared and new model cookie is used
-                window.location.href = '/';
+                // Call callback if provided, otherwise redirect to new chat
+                if (onModelChange) {
+                  onModelChange(id);
+                } else {
+                  // Fallback: redirect to new chat for backwards compatibility
+                  window.location.href = '/';
+                }
               }}
               data-active={id === optimisticModelId}
               asChild

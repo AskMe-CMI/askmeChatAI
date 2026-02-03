@@ -14,12 +14,14 @@ function PureChatHeader({
   selectedVisibilityType,
   isReadonly,
   session,
+  onModelChange,
 }: {
   chatId: string;
   selectedModelId: string;
   selectedVisibilityType: VisibilityType;
   isReadonly: boolean;
   session: UserPayload;
+  onModelChange?: (modelId: string) => void;
 }) {
   return (
     <header className="flex sticky top-0 py-1.5 items-center px-2 md:px-2 gap-2">
@@ -27,8 +29,8 @@ function PureChatHeader({
 
       {!isReadonly && (
         <ModelSelector
-          session={session}
           selectedModelId={selectedModelId}
+          onModelChange={onModelChange}
           className="order-1 md:order-2"
         />
       )}
