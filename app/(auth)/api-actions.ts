@@ -87,7 +87,7 @@ export async function loginWithBackendAPI(
   }
 }
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 export interface RegisterActionState {
   status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';

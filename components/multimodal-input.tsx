@@ -28,6 +28,7 @@ import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import type { VisibilityType } from './visibility-selector';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { SuggestedActions } from './suggested-actions';
+import { uploadFileAction } from '@/app/(chat)/actions/upload';
 
 function PureMultimodalInput({
   chatId,
@@ -164,25 +165,22 @@ function PureMultimodalInput({
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      // Use server action to upload to backend API
+      const result = await uploadFileAction(formData);
 
-      if (response.ok) {
-        const data = await response.json();
-        const { url, pathname, contentType } = data;
-
+      if (result.success && result.file) {
         return {
-          url,
-          name: pathname,
-          contentType: contentType,
+          url: result.file.url,
+          name: result.file.filename,
+          contentType: result.file.content_type,
         };
       }
-      const { error } = await response.json();
-      toast.error(error);
+
+      toast.error(result.error || 'Upload failed');
+      return undefined;
     } catch (error) {
       toast.error('Failed to upload file, please try again!');
+      return undefined;
     }
   };
 
@@ -265,6 +263,7 @@ function PureMultimodalInput({
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
+        accept="image/jpeg,image/png,image/gif,image/webp,text/plain,.txt"
         onChange={handleFileChange}
         tabIndex={-1}
       />
@@ -334,7 +333,7 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        {/* <AttachmentsButton fileInputRef={fileInputRef} status={status} /> */}
+        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">

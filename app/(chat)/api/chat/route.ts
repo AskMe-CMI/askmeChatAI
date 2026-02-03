@@ -9,7 +9,7 @@ import {
 import { auth, type UserType } from '@/app/(auth)/auth';
 import { type RequestHints, systemPrompt } from '@/lib/ai/prompts';
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 // Declare Node.js globals
 declare const process: any;
@@ -803,7 +803,7 @@ export async function DELETE(request: Request) {
     return new ChatSDKError('unauthorized:chat').toResponse();
   }
 
-  const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+  const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
   try {
     console.log('🗑️ Deleting chat session from Backend API:', {

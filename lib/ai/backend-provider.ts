@@ -3,7 +3,7 @@ declare const process: any;
 
 import { cookies } from 'next/headers';
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 const COOKIE_NAME = 'session';
 
 /**
@@ -256,18 +256,28 @@ interface SessionMessageResponse {
 }
 
 /**
+ * Attachment for multimodal messages
+ */
+export interface Attachment {
+    type: 'image' | 'file';
+    url: string;
+}
+
+/**
  * Send a message to a Backend session and get AI response
  * This endpoint handles everything: sends to AI, saves user message, saves AI response
  * 
  * @param sessionId - The Backend session ID
  * @param content - The user's message content
  * @param model - Optional model to use (defaults to session's model)
+ * @param attachments - Optional array of file attachments (images, documents, etc.)
  * @returns The response containing both user and AI messages, or null on error
  */
 export async function sendMessageToSession(
     sessionId: number,
     content: string,
-    model?: string
+    model?: string,
+    attachments?: Attachment[]
 ): Promise<SessionMessageResponse | null> {
     const token = await getStoredToken();
 
@@ -280,11 +290,15 @@ export async function sendMessageToSession(
         sessionId,
         contentLength: content.length,
         model: model || '(session default)',
+        attachmentsCount: attachments?.length || 0,
     });
 
     try {
         const body: any = { content };
         if (model) body.model = model;
+        if (attachments && attachments.length > 0) {
+            body.attachments = attachments;
+        }
 
         const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}/messages`, {
             method: 'POST',

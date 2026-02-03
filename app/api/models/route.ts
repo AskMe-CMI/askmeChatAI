@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 export async function GET() {
     try {

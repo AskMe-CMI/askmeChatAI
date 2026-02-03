@@ -3,7 +3,7 @@ import { ChatSDKError } from '@/lib/errors';
 import { getStoredToken } from '@/lib/auth/local-auth';
 import type { NextRequest } from 'next/server';
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 // Backend session detail response
 interface BackendSession {

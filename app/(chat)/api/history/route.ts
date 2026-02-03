@@ -5,7 +5,7 @@ import { getStoredToken } from '@/lib/auth/local-auth';
 // Declare Node.js globals
 declare const process: any;
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 // Backend session response type
 interface BackendSession {

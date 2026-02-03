@@ -2,7 +2,7 @@
  * API Client for authentication with backend
  */
 
-const BACKEND_API_URL = process.env.BACKEND_API_URL || 'http://192.168.9.14:8000';
+const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 export interface LoginRequest {
   email: string;
