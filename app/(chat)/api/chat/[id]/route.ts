@@ -15,6 +15,14 @@ interface BackendSession {
   messages: BackendMessage[];
 }
 
+// Backend attachment response
+interface BackendAttachment {
+  type: 'image' | 'file';
+  url: string;
+  filename?: string;
+  content_type?: string;
+}
+
 // Backend message response
 interface BackendMessage {
   id: number;
@@ -23,14 +31,48 @@ interface BackendMessage {
   model?: string;
   tokens?: number;
   created_at: string;
+  attachments?: BackendAttachment[];
 }
 
 // Transform backend message to our UI format
 function transformBackendMessageToUI(message: BackendMessage) {
+  // Build parts array starting with text content
+  const parts: Array<{
+    type: string;
+    text?: string;
+    url?: string;
+    filename?: string;
+    mediaType?: string;
+  }> = [];
+
+  // Add text part if content exists
+  if (message.content) {
+    parts.push({ type: 'text', text: message.content });
+  }
+
+  // Add file parts for attachments (images, files)
+  if (message.attachments && message.attachments.length > 0) {
+    for (const attachment of message.attachments) {
+      // Derive mediaType from content_type, or infer from type field
+      let mediaType = attachment.content_type;
+      if (!mediaType && (attachment.type === 'image')) {
+        // Default to image/jpeg if no content_type but type is 'image'
+        mediaType = 'image/jpeg';
+      }
+
+      parts.push({
+        type: 'file',
+        url: attachment.url,
+        filename: attachment.filename || 'attachment',
+        mediaType,
+      });
+    }
+  }
+
   return {
     id: String(message.id),
     role: message.role as 'user' | 'assistant',
-    parts: [{ type: 'text', text: message.content }],
+    parts,
     attachments: [],
     createdAt: new Date(message.created_at),
     model: message.model, // Include model for displaying in UI
