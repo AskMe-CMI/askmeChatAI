@@ -65,7 +65,17 @@ export type ChatMessage = UIMessage<
   MessageMetadata,
   CustomUIDataTypes,
   ChatTools
-> & { id: string; role: 'user' | 'assistant' | 'system' };
+> & {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  usage?: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  model?: string;
+  createdAt?: Date | string;
+};
 
 export interface Attachment {
   name: string;

@@ -71,10 +71,10 @@ export function Chat({
   useEffect(() => {
     const initialMetadata: Record<string, { usage?: any; model?: string; createdAt?: string }> = {};
     initialMessages.forEach((m) => {
-      if (m.role === 'assistant' && (m.usage || (m as any).model || m.createdAt)) {
+      if (m.role === 'assistant' && (m.usage || m.model || m.createdAt)) {
         initialMetadata[m.id] = {
           usage: m.usage,
-          model: (m as any).model,
+          model: m.model,
           createdAt: typeof m.createdAt === 'string' ? m.createdAt : m.createdAt?.toISOString(),
         };
       }
@@ -175,7 +175,7 @@ export function Chat({
         }
       }
     },
-    onFinish: (response) => {
+    onFinish: (response: ChatMessage) => {
       console.log('🏁 Chat onFinish fired');
       // Move pending metadata to the actual message ID
       setMessageMetadata(prev => {
@@ -280,7 +280,7 @@ export function Chat({
 
   // Track the latest assistant message ID for metadata association
   useEffect(() => {
-    const lastAssistant = messages.filter(m => m.role === 'assistant').pop();
+    const lastAssistant = messages.filter((m: ChatMessage) => m.role === 'assistant').pop();
     if (lastAssistant) {
       latestAssistantIdRef.current = lastAssistant.id;
     }
@@ -294,7 +294,7 @@ export function Chat({
 
     if (!hasStoredMetadata && !hasPending) return messages;
 
-    return messages.map((msg, index) => {
+    return messages.map((msg: ChatMessage, index: number) => {
       if (msg.role !== 'assistant') return msg;
 
       // Check if we have stored metadata for this message ID
@@ -303,19 +303,19 @@ export function Chat({
         return {
           ...msg,
           usage: storedMeta.usage || msg.usage,
-          model: storedMeta.model || (msg as any).model,
+          model: storedMeta.model || msg.model,
           createdAt: storedMeta.createdAt || msg.createdAt,
         } as ChatMessage;
       }
 
       // For the last assistant message, apply 'pending' metadata if available
       const isLastAssistant = index === messages.length - 1 ||
-        !messages.slice(index + 1).some(m => m.role === 'assistant');
+        !messages.slice(index + 1).some((m: ChatMessage) => m.role === 'assistant');
       if (isLastAssistant && hasPending) {
         return {
           ...msg,
           usage: messageMetadata.pending!.usage || msg.usage,
-          model: messageMetadata.pending!.model || (msg as any).model,
+          model: messageMetadata.pending!.model || msg.model,
           createdAt: messageMetadata.pending!.createdAt || msg.createdAt,
         } as ChatMessage;
       }

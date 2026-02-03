@@ -17,9 +17,9 @@ export default async function Page() {
 
   // Convert API session to UserPayload format
   const userPayload = {
-    id: session.id,
+    id: String(session.id),
     email: session.email,
-    emailRmutl: session.emailRmutl,
+    emailRmutl: session.email,
     type: 'regular' as const,
   };
 
