@@ -34,8 +34,8 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
             <div className="relative z-10 w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col md:mx-4">
                 {/* Header */}
                 <div className="flex items-center gap-3 p-6 border-b shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <div className="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-teal-600 dark:text-teal-400" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                     </div>
@@ -52,7 +52,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                     <div className="text-sm text-muted-foreground leading-relaxed space-y-6">
 
                         {/* Company Info */}
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4">
+                        <div className="bg-teal-50 dark:bg-teal-900/20 rounded-xl p-4">
                             <h3 className="font-semibold text-foreground mb-2">ผู้ควบคุมข้อมูลส่วนบุคคล:</h3>
                             <p className="font-medium text-foreground">บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด</p>
                             <p>เลขที่ 108 อาคารบางกอกไทยทาวเวอร์ ชั้น 8 ห้อง 801 ถนนรางน้ำ แขวงถนนพญาไท เขตราชเทวี กรุงเทพฯ 10400</p>
@@ -96,7 +96,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                         </tr>
                                         <tr>
                                             <td className="border border-gray-200 dark:border-gray-700 p-2">ข้อมูลการใช้งาน</td>
-                                            <td className="border border-gray-200 dark:border-gray-700 p-2">ข้อความสนทนา (Chat Logs), ไฟล์ที่อัพโหลด (สำหรับ Cloud Drive), เวลาการใช้งาน</td>
+                                            <td className="border border-gray-200 dark:border-gray-700 p-2">ข้อความสนทนา (Chat Logs), เวลาการใช้งาน</td>
                                             <td className="border border-gray-200 dark:border-gray-700 p-2">ความยินยอม</td>
                                         </tr>
                                         <tr>
@@ -157,7 +157,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                 <li><strong>สิทธิเพิกถอนความยินยอม</strong> – ท่านสามารถเพิกถอนความยินยอมในการประมวลผลข้อมูลส่วนบุคคลได้ทุกเมื่อ โดยไม่ส่งผลกระทบต่อการประมวลผลที่เกิดขึ้นก่อนการเพิกถอน</li>
                                 <li><strong>สิทธิขอรับข้อมูล</strong> – ท่านสามารถร้องขอรับสำเนาข้อมูลส่วนบุคคลของท่านในรูปแบบอิเล็กทรอนิกส์ตามที่บริษัทฯกำหนด</li>
                             </ul>
-                            <p className="mt-2">หากท่านประสงค์จะใช้สิทธิข้างต้น กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล (DPO) ผ่านทางอีเมล <a href="mailto:dpo@askme.co.th" className="text-blue-600 hover:underline">dpo@askme.co.th</a> ทั้งนี้บริษัทฯจะดำเนินการตามคำขอของท่านโดยเร็วที่สุดตามข้อกำหนดของกฎหมาย</p>
+                            <p className="mt-2">หากท่านประสงค์จะใช้สิทธิข้างต้น กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล (DPO) ผ่านทางอีเมล <a href="mailto:dpo@askme.co.th" className="text-teal-600 hover:underline">dpo@askme.co.th</a> ทั้งนี้บริษัทฯจะดำเนินการตามคำขอของท่านโดยเร็วที่สุดตามข้อกำหนดของกฎหมาย</p>
                         </div>
 
                         {/* Section 7 - Consent */}
@@ -170,7 +170,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                     type="checkbox"
                                     checked={isAccepted}
                                     onChange={(e) => setIsAccepted(e.target.checked)}
-                                    className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                                 />
                                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                                     ข้าพเจ้าให้ความยินยอมแก่บริษัท อาซ์คมี โซลูชั่น แอนด์ คอนซัลแทนท์ จำกัด ในการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคลของข้าพเจ้า ตามที่ระบุไว้ในนโยบายความเป็นส่วนตัวฉบับนี้ เพื่อวัตถุประสงค์ในการให้บริการ AI Gateway Demo
@@ -183,7 +183,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                     type="checkbox"
                                     checked={isAcknowledged}
                                     onChange={(e) => setIsAcknowledged(e.target.checked)}
-                                    className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    className="shrink-0 mt-0.5 w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                                 />
                                 <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
                                     ข้าพเจ้าขอรับทราบและเข้าใจว่า:
@@ -201,7 +201,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
                                     onClick={handleAccept}
                                     disabled={!isAccepted || !isAcknowledged}
                                     className={`px-6 py-3 rounded-xl font-medium transition-all duration-200 ${isAccepted && isAcknowledged
-                                        ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
+                                        ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg hover:shadow-xl'
                                         : 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700'
                                         }`}
                                 >
@@ -215,7 +215,7 @@ export function PDPAConsentModal({ onAccept }: { onAccept?: (marketingConsent: b
 
                             <p className="text-xs text-muted-foreground text-center">
                                 หากท่านไม่ประสงค์จะยอมรับเงื่อนไขดังกล่าว ท่านสามารถเลือกที่จะไม่ใช้บริการนี้ได้<br />
-                                หากมีข้อสงสัยหรือประสงค์สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล ทางอีเมล: <a href="mailto:dpo@askme.co.th" className="text-blue-600 hover:underline">dpo@askme.co.th</a>
+                                หากมีข้อสงสัยหรือประสงค์สอบถามข้อมูลเพิ่มเติม กรุณาติดต่อเจ้าหน้าที่คุ้มครองข้อมูลส่วนบุคคล ทางอีเมล: <a href="mailto:dpo@askme.co.th" className="text-teal-600 hover:underline">dpo@askme.co.th</a>
                             </p>
                         </div>
 
