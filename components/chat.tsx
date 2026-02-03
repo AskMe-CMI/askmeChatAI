@@ -2,7 +2,7 @@
 
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -54,6 +54,8 @@ export function Chat({
   const [actualChatId, setActualChatId] = useState<string>(id);
   // Track the current model for mid-chat model switching
   const [currentModel, setCurrentModel] = useState<string>(initialChatModel);
+  // Store message metadata separately to avoid being overwritten by streaming
+  const [messageMetadata, setMessageMetadata] = useState<Record<string, { usage?: any; model?: string; createdAt?: string }>>({});
 
   // Handle model change mid-chat
   const handleModelChange = (newModelId: string) => {
@@ -128,6 +130,29 @@ export function Chat({
           console.error('Failed to parse chatId data:', e);
         }
       }
+
+      // Handle data-token-usage event - store metadata separately to avoid streaming overwrites
+      if (dataPart && dataPart.type === 'data-token-usage' && dataPart.data) {
+        try {
+          const usageData = JSON.parse(dataPart.data);
+          console.log('📊 Token usage received:', usageData);
+          // Store metadata keyed by 'latest' - will be applied to last assistant message
+          setMessageMetadata(prev => ({
+            ...prev,
+            latest: {
+              usage: {
+                prompt_tokens: usageData.prompt_tokens,
+                completion_tokens: usageData.completion_tokens,
+                total_tokens: usageData.total_tokens,
+              },
+              model: usageData.model,
+              createdAt: usageData.createdAt || new Date().toISOString(),
+            },
+          }));
+        } catch (e) {
+          console.error('Failed to parse token usage data:', e);
+        }
+      }
     },
     onFinish: () => {
       console.log('🏁 Chat onFinish fired');
@@ -166,6 +191,7 @@ export function Chat({
 
       sendMessage({
         role: 'user' as const,
+        createdAt: new Date().toISOString(),
         parts: [{ type: 'text', text: query }],
       });
 
@@ -216,6 +242,26 @@ export function Chat({
       ? (session as any).user
       : (session as any)) || null;
 
+  // Merge metadata into messages - apply 'latest' metadata to last assistant message
+  const messagesWithMetadata = useMemo(() => {
+    if (!messageMetadata.latest) return messages;
+
+    const result = [...messages];
+    // Find the last assistant message and merge metadata
+    for (let i = result.length - 1; i >= 0; i--) {
+      if (result[i].role === 'assistant') {
+        result[i] = {
+          ...result[i],
+          usage: messageMetadata.latest.usage,
+          model: messageMetadata.latest.model,
+          createdAt: messageMetadata.latest.createdAt || result[i].createdAt,
+        } as ChatMessage;
+        break;
+      }
+    }
+    return result;
+  }, [messages, messageMetadata]);
+
   return (
     <>
       <div className="flex flex-col min-w-0 h-dvh">
@@ -232,7 +278,7 @@ export function Chat({
           chatId={id}
           status={status}
           votes={votes}
-          messages={messages}
+          messages={messagesWithMetadata}
           setMessages={setMessages}
           regenerate={regenerate}
           isReadonly={isReadonly}

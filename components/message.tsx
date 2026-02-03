@@ -359,6 +359,14 @@ const PurePreviewMessage = ({
                   </div>
                 </>
               )}
+              {message.role === 'assistant' && (message as any).model && (
+                <>
+                  <div className="text-[10px] text-muted-foreground/60 select-none">•</div>
+                  <div className="text-[10px] text-muted-foreground/60 select-none">
+                    {(message as any).model}
+                  </div>
+                </>
+              )}
             </div>
 
             {!isReadonly && (

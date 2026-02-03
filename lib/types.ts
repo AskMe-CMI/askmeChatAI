@@ -28,6 +28,7 @@ export const messageMetadataSchema = z.object({
     completion_tokens: z.number(),
     total_tokens: z.number(),
   }).optional(),
+  model: z.string().optional(),
 });
 
 export type MessageMetadata = z.infer<typeof messageMetadataSchema>;

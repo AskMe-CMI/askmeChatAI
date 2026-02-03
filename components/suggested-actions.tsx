@@ -61,6 +61,7 @@ function PureSuggestedActions({
               // Note: URL update is handled in chat.tsx onData when Backend session ID is received
               sendMessage({
                 role: 'user',
+                createdAt: new Date().toISOString(),
                 parts: [{ type: 'text', text: suggestedAction.action }],
               });
             }}

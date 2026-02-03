@@ -344,12 +344,16 @@ export async function POST(request: Request) {
             }
 
             // Send usage as a custom data event since 'finish' event implies strict schema
-            if (sessionResponse.usage) {
-              writer.write({
-                type: 'data-token-usage',
-                data: JSON.stringify(sessionResponse.usage),
-              });
-            }
+            // NOTE: Must be sent AFTER text-end so assistant message exists in frontend
+            // Preparing usage data to send after message is created
+            // Always include model and createdAt, even if usage stats not available
+            const usageData = {
+              prompt_tokens: sessionResponse.usage?.prompt_tokens || 0,
+              completion_tokens: sessionResponse.usage?.completion_tokens || 0,
+              total_tokens: sessionResponse.usage?.total_tokens || sessionResponse.ai_message.tokens || 0,
+              model: sessionResponse.ai_message.model,
+              createdAt: sessionResponse.ai_message.created_at,
+            };
 
             // Start text block
             writer.write({
@@ -369,6 +373,12 @@ export async function POST(request: Request) {
               type: 'text-end',
               id: messageId,
 
+            });
+
+            // Send usage data AFTER text-end so assistant message exists in frontend
+            writer.write({
+              type: 'data-token-usage',
+              data: JSON.stringify(usageData),
             });
 
             // Write finish event - clean without extra keys to avoid validation error
