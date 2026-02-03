@@ -28,10 +28,10 @@ export default async function Layout({
   // Convert API session to UserPayload format
   const userPayload = session
     ? {
-      sub: session.id,
+      sub: String(session.id),
       // email: session.email,
       email: `${sha512(`AskMe${session.email}`).substring(0, 4)}-${sha512(`AskMe${session.email}`).substring(5, 10)}-${sha512(`AskMe${session.email}`).substring(11, 15)}-${sha512(`AskMe${session.email}`).substring(16, 20)}`,
-      emailRmutl: session.emailRmutl,
+      emailRmutl: session.email, // Use email from API since emailRmutl doesn't exist
       type: 'regular' as const,
     }
     : null;
@@ -45,7 +45,7 @@ export default async function Layout({
       <DataStreamProvider>
         <SidebarProvider defaultOpen={!isCollapsed}>
           <AppSidebar user={userPayload} />
-          <SidebarInset className="bg-transparent">{children}</SidebarInset>
+          <SidebarInset className="bg-[#fbfaf4] dark:bg-transparent">{children}</SidebarInset>
         </SidebarProvider>
       </DataStreamProvider>
 

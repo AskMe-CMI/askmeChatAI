@@ -29,7 +29,7 @@ export function AuthForm({
           name="email"
           className="bg-muted text-md md:text-sm"
           type="email"
-          placeholder="user@rmutl.ac.th"
+          placeholder="user@example.com"
           autoComplete="email"
           required
           autoFocus

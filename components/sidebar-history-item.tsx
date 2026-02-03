@@ -109,7 +109,7 @@ const PureChatItem = ({
             className="h-auto py-2"
           >
             <Link href={`/chat/${chat.id}`} onClick={() => setOpenMobile(false)}>
-              <div className="flex flex-col gap-0.5 w-full overflow-hidden">
+              <div className="flex flex-col gap-0.5 w-full overflow-hidden text-primary">
                 <span className="truncate font-medium text-sm">
                   {chat.title}
                 </span>

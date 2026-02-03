@@ -36,12 +36,12 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               <img
                 src="/images/logoW.png"
                 alt="logo"
-                className="h-6 w-auto rounded-full dark:hidden"
+                className="h-6 w-auto dark:hidden"
               />
               <img
                 src="/images/logoB.png"
                 alt="logo"
-                className="h-6 w-auto p-[0.275rem] bg-white rounded-full hidden dark:block"
+                className="h-6 w-auto hidden dark:block"
               />
             </Link>
 

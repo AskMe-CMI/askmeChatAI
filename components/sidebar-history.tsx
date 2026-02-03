@@ -224,17 +224,17 @@ export function SidebarHistory({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="w-full justify-start gap-2 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:group-data-[state=collapsed]:w-8 group-data-[collapsible=icon]:group-data-[state=collapsed]:p-0 group-data-[collapsible=icon]:group-data-[state=collapsed]:justify-center"
+                  className="group/newchat w-full justify-start gap-2 px-2 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:group-data-[state=collapsed]:w-8 group-data-[collapsible=icon]:group-data-[state=collapsed]:p-0 group-data-[collapsible=icon]:group-data-[state=collapsed]:justify-center"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');
                     router.refresh();
                   }}
                 >
-                  <div className="shrink-0">
+                  <div className="shrink-0 group-hover/newchat:text-primary">
                     <PlusIcon />
                   </div>
-                  <span className="group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden">
+                  <span className="group-data-[collapsible=icon]:group-data-[state=collapsed]:hidden group-hover/newchat:text-primary">
                     New Chat
                   </span>
                 </Button>
