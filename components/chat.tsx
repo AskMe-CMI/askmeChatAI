@@ -2,7 +2,7 @@
 
 import { DefaultChatTransport } from 'ai';
 import { useChat } from '@ai-sdk/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 import { ChatHeader } from '@/components/chat-header';
 import type { Vote } from '@/lib/db/schema';
@@ -55,13 +55,34 @@ export function Chat({
   // Track the current model for mid-chat model switching
   const [currentModel, setCurrentModel] = useState<string>(initialChatModel);
   // Store message metadata separately to avoid being overwritten by streaming
+  // Key by message ID to preserve metadata for previous messages
   const [messageMetadata, setMessageMetadata] = useState<Record<string, { usage?: any; model?: string; createdAt?: string }>>({});
+  // Track the latest assistant message ID for applying incoming metadata (useRef to avoid closure issues)
+  const latestAssistantIdRef = useRef<string | null>(null);
 
   // Handle model change mid-chat
   const handleModelChange = (newModelId: string) => {
     console.log('🔄 Model changed mid-chat:', { from: currentModel, to: newModelId });
     setCurrentModel(newModelId);
   };
+
+  // Initialize messageMetadata from initialMessages on mount
+  // This preserves metadata (createdAt, usage, model) from history when new messages are sent
+  useEffect(() => {
+    const initialMetadata: Record<string, { usage?: any; model?: string; createdAt?: string }> = {};
+    initialMessages.forEach((m) => {
+      if (m.role === 'assistant' && (m.usage || (m as any).model || m.createdAt)) {
+        initialMetadata[m.id] = {
+          usage: m.usage,
+          model: (m as any).model,
+          createdAt: typeof m.createdAt === 'string' ? m.createdAt : m.createdAt?.toISOString(),
+        };
+      }
+    });
+    if (Object.keys(initialMetadata).length > 0) {
+      setMessageMetadata(prev => ({ ...initialMetadata, ...prev }));
+    }
+  }, [initialMessages]);
 
   // Debug: Log initial messages when loading history
   useEffect(() => {
@@ -131,15 +152,15 @@ export function Chat({
         }
       }
 
-      // Handle data-token-usage event - store metadata separately to avoid streaming overwrites
+      // Handle data-token-usage event - store metadata temporarily keyed by 'pending'
       if (dataPart && dataPart.type === 'data-token-usage' && dataPart.data) {
         try {
           const usageData = JSON.parse(dataPart.data);
           console.log('📊 Token usage received:', usageData);
-          // Store metadata keyed by 'latest' - will be applied to last assistant message
+          // Store metadata keyed by 'pending' - will be moved to message ID in onFinish
           setMessageMetadata(prev => ({
             ...prev,
-            latest: {
+            pending: {
               usage: {
                 prompt_tokens: usageData.prompt_tokens,
                 completion_tokens: usageData.completion_tokens,
@@ -154,8 +175,23 @@ export function Chat({
         }
       }
     },
-    onFinish: () => {
+    onFinish: (response) => {
       console.log('🏁 Chat onFinish fired');
+      // Move pending metadata to the actual message ID
+      setMessageMetadata(prev => {
+        if (!prev.pending) return prev;
+        // Find the last assistant message ID from ref (not state, to avoid closure issues)
+        const lastAssistantId = latestAssistantIdRef.current;
+        if (lastAssistantId) {
+          console.log('📊 Storing metadata for message:', lastAssistantId);
+          const { pending, ...rest } = prev;
+          return {
+            ...rest,
+            [lastAssistantId]: pending,
+          };
+        }
+        return prev;
+      });
       mutate(unstable_serialize(getChatHistoryPaginationKey));
     },
     onError: (error: unknown) => {
@@ -242,24 +278,50 @@ export function Chat({
       ? (session as any).user
       : (session as any)) || null;
 
-  // Merge metadata into messages - apply 'latest' metadata to last assistant message
-  const messagesWithMetadata = useMemo(() => {
-    if (!messageMetadata.latest) return messages;
-
-    const result = [...messages];
-    // Find the last assistant message and merge metadata
-    for (let i = result.length - 1; i >= 0; i--) {
-      if (result[i].role === 'assistant') {
-        result[i] = {
-          ...result[i],
-          usage: messageMetadata.latest.usage,
-          model: messageMetadata.latest.model,
-          createdAt: messageMetadata.latest.createdAt || result[i].createdAt,
-        } as ChatMessage;
-        break;
-      }
+  // Track the latest assistant message ID for metadata association
+  useEffect(() => {
+    const lastAssistant = messages.filter(m => m.role === 'assistant').pop();
+    if (lastAssistant) {
+      latestAssistantIdRef.current = lastAssistant.id;
     }
-    return result;
+  }, [messages]);
+
+  // Merge metadata into messages - apply stored metadata per message ID
+  // For 'pending' metadata, apply to the last assistant message (still streaming)
+  const messagesWithMetadata = useMemo(() => {
+    const hasStoredMetadata = Object.keys(messageMetadata).some(key => key !== 'pending');
+    const hasPending = !!messageMetadata.pending;
+
+    if (!hasStoredMetadata && !hasPending) return messages;
+
+    return messages.map((msg, index) => {
+      if (msg.role !== 'assistant') return msg;
+
+      // Check if we have stored metadata for this message ID
+      const storedMeta = messageMetadata[msg.id];
+      if (storedMeta) {
+        return {
+          ...msg,
+          usage: storedMeta.usage || msg.usage,
+          model: storedMeta.model || (msg as any).model,
+          createdAt: storedMeta.createdAt || msg.createdAt,
+        } as ChatMessage;
+      }
+
+      // For the last assistant message, apply 'pending' metadata if available
+      const isLastAssistant = index === messages.length - 1 ||
+        !messages.slice(index + 1).some(m => m.role === 'assistant');
+      if (isLastAssistant && hasPending) {
+        return {
+          ...msg,
+          usage: messageMetadata.pending!.usage || msg.usage,
+          model: messageMetadata.pending!.model || (msg as any).model,
+          createdAt: messageMetadata.pending!.createdAt || msg.createdAt,
+        } as ChatMessage;
+      }
+
+      return msg;
+    });
   }, [messages, messageMetadata]);
 
   return (
