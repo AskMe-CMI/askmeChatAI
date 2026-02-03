@@ -71,8 +71,8 @@ export default function RegisterAltPage() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => router.push('/logint')}>
-                            ไปหน้าเข้าสู่ระบบ
+                        <AlertDialogAction onClick={() => window.location.reload()}>
+                            ตกลง
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
@@ -82,7 +82,7 @@ export default function RegisterAltPage() {
                     <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
                         <h3 className="text-xl font-semibold dark:text-zinc-50">Register</h3>
                         <p className="text-sm text-gray-500 dark:text-zinc-400">
-                            Create your AskMe Chat AI account
+                            Create your AskMe Cloud Drive account
                         </p>
                     </div>
 
@@ -166,13 +166,7 @@ export default function RegisterAltPage() {
                         <SubmitButton isSuccessful={state.status === 'success'}>
                             Register
                         </SubmitButton>
-                        <button
-                            type="button"
-                            onClick={() => setShowSuccessModal(true)}
-                            className="bg-red-500 text-white p-2 rounded mt-2 w-full"
-                        >
-                            Test Modal (Debug)
-                        </button>
+
                     </Form>
 
                     <div className="flex flex-col gap-3 px-4 sm:px-16">
