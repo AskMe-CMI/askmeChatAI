@@ -94,7 +94,7 @@ export function CreditCheckButton() {
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-foreground">Credit / Token Usage</h3>
+                        <h3 className="font-semibold text-foreground">Credit Usage</h3>
                         <button
                             onClick={() => setIsOpen(false)}
                             className="text-muted-foreground hover:text-foreground text-lg leading-none"
@@ -137,14 +137,14 @@ export function CreditCheckButton() {
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Used</div>
                                     <div className="text-xl font-bold text-foreground">{formatNumber(stats.tokens.used)}</div>
-                                    <div className="text-xs text-muted-foreground">tokens</div>
+                                    <div className="text-xs text-muted-foreground">credits</div>
                                 </div>
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Remaining</div>
                                     <div className={`text-xl font-bold ${getStatusColor()}`}>
                                         {formatNumber(stats.tokens.remaining)}
                                     </div>
-                                    <div className="text-xs text-muted-foreground">tokens</div>
+                                    <div className="text-xs text-muted-foreground">credits</div>
                                 </div>
                             </div>
 
@@ -204,7 +204,7 @@ export function CreditCheckButton() {
                 onClick={handleClick}
                 disabled={isLoading}
                 className="h-12 w-12 rounded-full shadow-lg bg-background hover:bg-muted border-2"
-                title="Check Credit/Token"
+                title="Check Credit"
             >
                 {isLoading ? (
                     <div className="w-5 h-5 animate-spin">

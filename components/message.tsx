@@ -355,7 +355,7 @@ const PurePreviewMessage = ({
                 <>
                   <div className="text-[10px] text-muted-foreground/60 select-none">•</div>
                   <div className="text-[10px] text-muted-foreground/60 select-none">
-                    {message.usage.total_tokens || 0} tokens
+                    {message.usage.total_tokens || 0} credits
                   </div>
                 </>
               )}

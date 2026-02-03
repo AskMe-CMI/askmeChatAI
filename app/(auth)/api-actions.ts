@@ -223,6 +223,7 @@ export async function logoutFromBackendAPI(): Promise<void> {
 
 /**
  * Get usage stats from backend API
+ * Uses /api/token-usage/my-usage endpoint
  */
 export async function getUsageStatsAction(): Promise<{ success: boolean; data?: UsageStatsResponse; message?: string }> {
   try {
@@ -235,7 +236,7 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
       };
     }
 
-    const response = await fetch(`${BACKEND_API_URL}/api/v1/usage/stats`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/token-usage/my-usage`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -251,7 +252,42 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
       return { success: false, message: `Failed to fetch stats: ${response.status}` };
     }
 
-    const data = await response.json();
+    // Response format from /api/token-usage/my-usage:
+    // {
+    //   "user_id": 17,
+    //   "email": "user@example.com",
+    //   "tokens_used": 27943,
+    //   "token_limit": 10000,
+    //   "tokens_remaining": 0,
+    //   "usage_percentage": 279.43,
+    //   "limit_reached": true,
+    //   "limit_expiry_date": null
+    // }
+    const rawData = await response.json();
+
+    // Transform to UsageStatsResponse format
+    const data: UsageStatsResponse = {
+      user_id: String(rawData.user_id),
+      email: rawData.email,
+      tokens: {
+        used: rawData.tokens_used || 0,
+        limit: rawData.token_limit || 0,
+        remaining: Math.max(rawData.tokens_remaining || 0, 0),
+        percentage_used: rawData.usage_percentage || 0,
+        expiry_date: rawData.limit_expiry_date || null,
+      },
+      usage: {
+        request_count: 0, // Not provided by this endpoint
+        spend: 0, // Not provided by this endpoint
+      },
+      status: {
+        is_active: true,
+        is_blocked: false,
+        limit_reached: rawData.limit_reached || false,
+        limit_expired: false,
+      },
+    };
+
     return { success: true, data };
 
   } catch (error) {
