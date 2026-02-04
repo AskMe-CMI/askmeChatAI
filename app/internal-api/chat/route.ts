@@ -454,294 +454,297 @@ export async function POST(request: Request) {
 
 
     // Use AI SDK with Dify provider for better integration
-    const DIFY_BASE_URL = process.env.DIFY_BASE_URL;
-    const DIFY_API_KEY = process.env.DIFY_API_KEY;
-    const DIFY_APP_ID = process.env.DIFY_APP_ID;
+    // Only validate Dify config if Backend API is not enabled
+    if (!USE_BACKEND_API) {
+      const DIFY_BASE_URL = process.env.DIFY_BASE_URL;
+      const DIFY_API_KEY = process.env.DIFY_API_KEY;
+      const DIFY_APP_ID = process.env.DIFY_APP_ID;
 
-    // Validate Dify configuration
-    console.log('🔍 Dify Configuration Validation:', {
-      hasApiKey: !!DIFY_API_KEY,
-      hasAppId: !!DIFY_APP_ID,
-      hasBaseUrl: !!DIFY_BASE_URL,
-      apiKeyPrefix: DIFY_API_KEY?.substring(0, 15),
-      appIdPrefix: DIFY_APP_ID?.substring(0, 15),
-      baseUrl: DIFY_BASE_URL,
-      apiKeyValid: DIFY_API_KEY?.startsWith('app-'),
-      appIdValid: DIFY_APP_ID?.startsWith('app-'),
-    });
-
-    if (!DIFY_API_KEY) {
-      console.warn(
-        'DIFY_API_KEY not configured, falling back to default provider',
-      );
-    } else if (!DIFY_API_KEY.startsWith('app-')) {
-      console.error('Invalid DIFY_API_KEY format. Must start with "app-"', {
-        apiKey: DIFY_API_KEY,
-        prefix: DIFY_API_KEY.substring(0, 5),
+      // Validate Dify configuration
+      console.log('🔍 Dify Configuration Validation:', {
+        hasApiKey: !!DIFY_API_KEY,
+        hasAppId: !!DIFY_APP_ID,
+        hasBaseUrl: !!DIFY_BASE_URL,
+        apiKeyPrefix: DIFY_API_KEY?.substring(0, 15),
+        appIdPrefix: DIFY_APP_ID?.substring(0, 15),
+        baseUrl: DIFY_BASE_URL,
+        apiKeyValid: DIFY_API_KEY?.startsWith('app-'),
+        appIdValid: DIFY_APP_ID?.startsWith('app-'),
       });
-      return new ChatSDKError(
-        'bad_request:api',
-        'Invalid Dify API key format',
-      ).toResponse();
-    }
 
-    if (!DIFY_APP_ID) {
-      console.warn('DIFY_APP_ID not configured, using default app ID');
-    } else if (!DIFY_APP_ID.startsWith('app-')) {
-      console.error('Invalid DIFY_APP_ID format. Must start with "app-"', {
-        appId: DIFY_APP_ID,
-        prefix: DIFY_APP_ID.substring(0, 5),
-      });
-      return new ChatSDKError(
-        'bad_request:api',
-        'Invalid Dify App ID format',
-      ).toResponse();
-    }
-
-    if (DIFY_BASE_URL && DIFY_API_KEY) {
-      try {
-        console.log(
-          '🚀 Using Dify provider for chat with user:',
-          session.user.email || session.user.id,
+      if (!DIFY_API_KEY) {
+        console.warn(
+          'DIFY_API_KEY not configured, falling back to default provider',
         );
-
-        // Use existing conversation ID from database for chat continuity
-        // Refetch chat to ensure we have the latest conversationId
-        const latestChat = await getChatById({ id });
-        let existingConversationId = latestChat?.conversationId;
-
-        // If we don't have a conversation ID yet, check if we saved one recently
-        // This handles the case where a new message is sent before the database is updated
-        if (!existingConversationId && latestChat) {
-          // Force a small delay and refetch to ensure we get the latest data
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          const recheckChat = await getChatById({ id });
-          existingConversationId = recheckChat?.conversationId;
-        }
-
-        console.log('🔍 Dify Debug:', {
-          chatId: id,
-          existingConversationId,
-          userEmail: session.user.email,
-          messageCount: uiMessages.length,
-          chatFound: !!latestChat,
-          chatData: latestChat
-            ? {
-              id: latestChat.id,
-              title: latestChat.title,
-              conversationId: latestChat.conversationId,
-            }
-            : null,
+      } else if (!DIFY_API_KEY.startsWith('app-')) {
+        console.error('Invalid DIFY_API_KEY format. Must start with "app-"', {
+          apiKey: DIFY_API_KEY,
+          prefix: DIFY_API_KEY.substring(0, 5),
         });
+        return new ChatSDKError(
+          'bad_request:api',
+          'Invalid Dify API key format',
+        ).toResponse();
+      }
 
-        // Use streamText directly for simpler streaming
-        console.log('🎬 Starting Dify streamText execution...');
+      if (!DIFY_APP_ID) {
+        console.warn('DIFY_APP_ID not configured, using default app ID');
+      } else if (!DIFY_APP_ID.startsWith('app-')) {
+        console.error('Invalid DIFY_APP_ID format. Must start with "app-"', {
+          appId: DIFY_APP_ID,
+          prefix: DIFY_APP_ID.substring(0, 5),
+        });
+        return new ChatSDKError(
+          'bad_request:api',
+          'Invalid Dify App ID format',
+        ).toResponse();
+      }
 
+      if (DIFY_BASE_URL && DIFY_API_KEY) {
         try {
-          console.log('📋 Headers being sent to Dify:', {
-            'user-id': session.user.email || session.user.id,
-            'chat-id': existingConversationId || 'NEW_CONVERSATION',
-            hasExistingId: !!existingConversationId,
+          console.log(
+            '🚀 Using Dify provider for chat with user:',
+            session.user.email || session.user.id,
+          );
+
+          // Use existing conversation ID from database for chat continuity
+          // Refetch chat to ensure we have the latest conversationId
+          const latestChat = await getChatById({ id });
+          let existingConversationId = latestChat?.conversationId;
+
+          // If we don't have a conversation ID yet, check if we saved one recently
+          // This handles the case where a new message is sent before the database is updated
+          if (!existingConversationId && latestChat) {
+            // Force a small delay and refetch to ensure we get the latest data
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            const recheckChat = await getChatById({ id });
+            existingConversationId = recheckChat?.conversationId;
+          }
+
+          console.log('🔍 Dify Debug:', {
+            chatId: id,
+            existingConversationId,
+            userEmail: session.user.email,
+            messageCount: uiMessages.length,
+            chatFound: !!latestChat,
+            chatData: latestChat
+              ? {
+                id: latestChat.id,
+                title: latestChat.title,
+                conversationId: latestChat.conversationId,
+              }
+              : null,
           });
 
-          const result = streamText({
-            model: difyModel,
-            messages: convertToModelMessages(uiMessages),
-            headers: {
+          // Use streamText directly for simpler streaming
+          console.log('🎬 Starting Dify streamText execution...');
+
+          try {
+            console.log('📋 Headers being sent to Dify:', {
               'user-id': session.user.email || session.user.id,
-              // Add chat-id for conversation continuity (required by dify-ai-provider)
-              ...(existingConversationId && {
-                'chat-id': existingConversationId,
-              }),
-            },
-            onStart: () => {
-              console.log('🎪 StreamText onStart fired');
-            },
-            onFinish: async (result: any) => {
-              console.log('🏁 StreamText onFinish fired');
+              'chat-id': existingConversationId || 'NEW_CONVERSATION',
+              hasExistingId: !!existingConversationId,
+            });
 
-              // Extract conversation_id and message_id from provider metadata
-              const conversationId =
-                result.providerMetadata?.difyWorkflowData?.conversationId;
-              const messageId =
-                result.providerMetadata?.difyWorkflowData?.messageId;
+            const result = streamText({
+              model: difyModel,
+              messages: convertToModelMessages(uiMessages),
+              headers: {
+                'user-id': session.user.email || session.user.id,
+                // Add chat-id for conversation continuity (required by dify-ai-provider)
+                ...(existingConversationId && {
+                  'chat-id': existingConversationId,
+                }),
+              },
+              onStart: () => {
+                console.log('🎪 StreamText onStart fired');
+              },
+              onFinish: async (result: any) => {
+                console.log('🏁 StreamText onFinish fired');
 
-              // Clean up AI response by removing metadata/reasoning text
-              let cleanedText = result.text || '';
-              const originalText = cleanedText;
+                // Extract conversation_id and message_id from provider metadata
+                const conversationId =
+                  result.providerMetadata?.difyWorkflowData?.conversationId;
+                const messageId =
+                  result.providerMetadata?.difyWorkflowData?.messageId;
 
-              console.log('🧹 Before cleaning:', {
-                originalLength: originalText.length,
-                hasThinkTags: originalText.includes('<think>'),
-                preview: `${originalText.substring(0, 200)}...`,
-              });
+                // Clean up AI response by removing metadata/reasoning text
+                let cleanedText = result.text || '';
+                const originalText = cleanedText;
 
-              // Remove common AI reasoning patterns
-              const reasoningPatterns = [
-                /^This question is asking for.*?\.\s*/i,
-                /^I do not need to use a tool for this.*?\.\s*/i,
-                /^Based on the provided context.*?\.\s*/i,
-                /^The answer can be derived from.*?\.\s*/i,
-                // Remove <think>...</think> tags and their content
-                /<think>[\s\S]*?<\/think>\s*/gi,
-                // Remove any remaining think tags that might be malformed
-                /<\/?think[^>]*>\s*/gi,
-              ];
+                console.log('🧹 Before cleaning:', {
+                  originalLength: originalText.length,
+                  hasThinkTags: originalText.includes('<think>'),
+                  preview: `${originalText.substring(0, 200)}...`,
+                });
 
-              reasoningPatterns.forEach((pattern, index) => {
-                const beforeReplace = cleanedText;
-                cleanedText = cleanedText.replace(pattern, '');
-                if (beforeReplace !== cleanedText) {
-                  console.log(`🔄 Pattern ${index} matched and replaced`);
-                }
-              });
+                // Remove common AI reasoning patterns
+                const reasoningPatterns = [
+                  /^This question is asking for.*?\.\s*/i,
+                  /^I do not need to use a tool for this.*?\.\s*/i,
+                  /^Based on the provided context.*?\.\s*/i,
+                  /^The answer can be derived from.*?\.\s*/i,
+                  // Remove <think>...</think> tags and their content
+                  /<think>[\s\S]*?<\/think>\s*/gi,
+                  // Remove any remaining think tags that might be malformed
+                  /<\/?think[^>]*>\s*/gi,
+                ];
 
-              // Trim any extra whitespace
-              cleanedText = cleanedText.trim();
+                reasoningPatterns.forEach((pattern, index) => {
+                  const beforeReplace = cleanedText;
+                  cleanedText = cleanedText.replace(pattern, '');
+                  if (beforeReplace !== cleanedText) {
+                    console.log(`🔄 Pattern ${index} matched and replaced`);
+                  }
+                });
 
-              console.log('🧹 After cleaning:', {
-                cleanedLength: cleanedText.length,
-                hasThinkTags: cleanedText.includes('<think>'),
-                preview: `${cleanedText.substring(0, 200)}...`,
-                wasChanged: originalText !== cleanedText,
-              });
+                // Trim any extra whitespace
+                cleanedText = cleanedText.trim();
 
-              console.log('✅ Dify Response Metadata:', {
-                chatId: id,
-                conversationId,
-                messageId,
-                originalLength: result.text?.length || 0,
-                cleanedLength: cleanedText.length,
-                fullText: `${cleanedText.substring(0, 100)}...`, // First 100 chars
-              });
+                console.log('🧹 After cleaning:', {
+                  cleanedLength: cleanedText.length,
+                  hasThinkTags: cleanedText.includes('<think>'),
+                  preview: `${cleanedText.substring(0, 200)}...`,
+                  wasChanged: originalText !== cleanedText,
+                });
 
-              if (conversationId) {
-                const chatToSave = {
-                  id,
-                  userId: session.user.email, // Use email for consistency
-                  title: latestChat?.title ?? 'สร้างแชทใหม่',
-                  visibility: latestChat?.visibility ?? 'private',
+                console.log('✅ Dify Response Metadata:', {
+                  chatId: id,
                   conversationId,
                   messageId,
-                };
-
-                console.log('💾 Saving chat with data:', chatToSave);
-
-                await saveChat(chatToSave);
-
-                console.log(
-                  '💾 Chat updated with Dify conversation ID:',
-                  conversationId,
-                );
-
-                // Verify the save worked
-                const verifyChat = await getChatById({ id });
-                console.log('✅ Verification - Chat after save:', {
-                  id: verifyChat?.id,
-                  conversationId: verifyChat?.conversationId,
-                  title: verifyChat?.title,
+                  originalLength: result.text?.length || 0,
+                  cleanedLength: cleanedText.length,
+                  fullText: `${cleanedText.substring(0, 100)}...`, // First 100 chars
                 });
-              }
 
-              await saveMessages({
-                messages: [
-                  {
-                    chatId: id,
-                    id: generateUUID(),
-                    role: 'user',
-                    parts: uiPartsToDbParts(message.parts),
-                    attachments: [],
-                    createdAt: new Date(),
-                  },
-                  {
-                    chatId: id,
-                    id: generateUUID(),
-                    role: 'assistant',
-                    parts: [{ text: cleanedText }], // Use cleaned text
-                    attachments: [],
-                    createdAt: new Date(),
-                  },
-                ],
-              });
+                if (conversationId) {
+                  const chatToSave = {
+                    id,
+                    userId: session.user.email, // Use email for consistency
+                    title: latestChat?.title ?? 'สร้างแชทใหม่',
+                    visibility: latestChat?.visibility ?? 'private',
+                    conversationId,
+                    messageId,
+                  };
 
-              console.log('💬 Messages saved (user + assistant)');
-            },
-            onError: (error: any) => {
-              console.error('❌ StreamText onError fired:', {
-                error,
-                message: error?.message,
-                stack: error?.stack,
-                name: error?.name,
-                cause: error?.cause,
-              });
-            },
-          });
+                  console.log('💾 Saving chat with data:', chatToSave);
 
-          // Convert to UI message stream with proper error handling
-          const stream = result.toUIMessageStream({
-            sendReasoning: true,
-            generateId: generateUUID,
-          });
+                  await saveChat(chatToSave);
 
-          console.log('✅ Stream created successfully');
+                  console.log(
+                    '💾 Chat updated with Dify conversation ID:',
+                    conversationId,
+                  );
 
-          // Return the streaming response
-          return new Response(
-            stream.pipeThrough(new JsonToSseTransformStream()),
-          );
-        } catch (streamError) {
-          console.error('❌ Error in streamText setup:', {
-            error: streamError,
-            message:
-              streamError instanceof Error
-                ? streamError.message
-                : 'Unknown error',
-            stack:
-              streamError instanceof Error ? streamError.stack : 'No stack',
-            name: streamError instanceof Error ? streamError.name : 'Unknown',
+                  // Verify the save worked
+                  const verifyChat = await getChatById({ id });
+                  console.log('✅ Verification - Chat after save:', {
+                    id: verifyChat?.id,
+                    conversationId: verifyChat?.conversationId,
+                    title: verifyChat?.title,
+                  });
+                }
+
+                await saveMessages({
+                  messages: [
+                    {
+                      chatId: id,
+                      id: generateUUID(),
+                      role: 'user',
+                      parts: uiPartsToDbParts(message.parts),
+                      attachments: [],
+                      createdAt: new Date(),
+                    },
+                    {
+                      chatId: id,
+                      id: generateUUID(),
+                      role: 'assistant',
+                      parts: [{ text: cleanedText }], // Use cleaned text
+                      attachments: [],
+                      createdAt: new Date(),
+                    },
+                  ],
+                });
+
+                console.log('💬 Messages saved (user + assistant)');
+              },
+              onError: (error: any) => {
+                console.error('❌ StreamText onError fired:', {
+                  error,
+                  message: error?.message,
+                  stack: error?.stack,
+                  name: error?.name,
+                  cause: error?.cause,
+                });
+              },
+            });
+
+            // Convert to UI message stream with proper error handling
+            const stream = result.toUIMessageStream({
+              sendReasoning: true,
+              generateId: generateUUID,
+            });
+
+            console.log('✅ Stream created successfully');
+
+            // Return the streaming response
+            return new Response(
+              stream.pipeThrough(new JsonToSseTransformStream()),
+            );
+          } catch (streamError) {
+            console.error('❌ Error in streamText setup:', {
+              error: streamError,
+              message:
+                streamError instanceof Error
+                  ? streamError.message
+                  : 'Unknown error',
+              stack:
+                streamError instanceof Error ? streamError.stack : 'No stack',
+              name: streamError instanceof Error ? streamError.name : 'Unknown',
+              chatId: id,
+            });
+
+            // Return error response immediately
+            return new ChatSDKError(
+              'offline:chat',
+              'Dify streaming failed',
+            ).toResponse();
+          }
+        } catch (err) {
+          const cause = String(err);
+          console.error('❌ Dify provider call failed:', {
+            error: err,
+            cause,
+            stack: err instanceof Error ? err.stack : 'No stack trace',
+            message: err instanceof Error ? err.message : 'Unknown error',
+            // Check if it's an AggregateError
+            errors: err instanceof AggregateError ? err.errors : undefined,
             chatId: id,
+            userEmail: session.user.email || session.user.id,
+            difyConfig: {
+              baseUrl: DIFY_BASE_URL,
+              hasApiKey: !!DIFY_API_KEY,
+              hasAppId: !!DIFY_APP_ID,
+              apiKeyPrefix: `${DIFY_API_KEY?.substring(0, 10)}...`,
+              appIdPrefix: `${DIFY_APP_ID?.substring(0, 10)}...`,
+            },
           });
 
-          // Return error response immediately
-          return new ChatSDKError(
-            'offline:chat',
-            'Dify streaming failed',
-          ).toResponse();
-        }
-      } catch (err) {
-        const cause = String(err);
-        console.error('❌ Dify provider call failed:', {
-          error: err,
-          cause,
-          stack: err instanceof Error ? err.stack : 'No stack trace',
-          message: err instanceof Error ? err.message : 'Unknown error',
-          // Check if it's an AggregateError
-          errors: err instanceof AggregateError ? err.errors : undefined,
-          chatId: id,
-          userEmail: session.user.email || session.user.id,
-          difyConfig: {
-            baseUrl: DIFY_BASE_URL,
-            hasApiKey: !!DIFY_API_KEY,
-            hasAppId: !!DIFY_APP_ID,
-            apiKeyPrefix: `${DIFY_API_KEY?.substring(0, 10)}...`,
-            appIdPrefix: `${DIFY_APP_ID?.substring(0, 10)}...`,
-          },
-        });
+          // If debug mode is enabled, return detailed error
+          if (process.env.DEBUG_DIFY === 'true') {
+            const errorDetails =
+              err instanceof AggregateError
+                ? `AggregateError with ${err.errors.length} errors: ${err.errors.map((e) => e.message).join(', ')}`
+                : err instanceof Error
+                  ? err.message
+                  : String(err);
+            return new ChatSDKError('offline:chat', errorDetails).toResponse();
+          }
 
-        // If debug mode is enabled, return detailed error
-        if (process.env.DEBUG_DIFY === 'true') {
-          const errorDetails =
-            err instanceof AggregateError
-              ? `AggregateError with ${err.errors.length} errors: ${err.errors.map((e) => e.message).join(', ')}`
-              : err instanceof Error
-                ? err.message
-                : String(err);
-          return new ChatSDKError('offline:chat', errorDetails).toResponse();
+          return new ChatSDKError('offline:chat').toResponse();
         }
-
-        return new ChatSDKError('offline:chat').toResponse();
       }
-    }
+    } // End if (!USE_BACKEND_API)
 
     const stream = createUIMessageStream({
       execute: ({ writer: dataStream }: { writer: any }) => {
