@@ -23,7 +23,7 @@ import {
   saveMessages,
 } from '@/lib/db/queries';
 import { convertToUIMessages, generateUUID } from '@/lib/utils';
-import { generateTitleFromUserMessage } from '../../actions';
+import { generateTitleFromUserMessage } from '@/app/(chat)/actions';
 import { createDocument } from '@/lib/ai/tools/create-document';
 import { updateDocument } from '@/lib/ai/tools/update-document';
 import { requestSuggestions } from '@/lib/ai/tools/request-suggestions';
@@ -49,7 +49,7 @@ export const maxDuration = 60;
 
 let globalStreamContext: ResumableStreamContext | null = null;
 
-export function getStreamContext() {
+function getStreamContext() {
   if (!globalStreamContext) {
     try {
       globalStreamContext = createResumableStreamContext({

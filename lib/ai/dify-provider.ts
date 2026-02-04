@@ -81,10 +81,10 @@ async function customFetch(
       error:
         error instanceof Error
           ? {
-              name: error.name,
-              message: error.message,
-              stack: error.stack,
-            }
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
           : error,
     });
     throw error;

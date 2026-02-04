@@ -76,7 +76,7 @@ export function MsalButton({
       console.log('🍪 Cookies:', cookies);
       
       // 3. เช็ค API endpoint เพื่อยืนยันสถานะ
-      const response = await fetch('/api/auth/verify', {
+      const response = await fetch('/internal-api/auth/verify', {
         method: 'GET',
         credentials: 'include', // ส่ง cookies
       });
@@ -147,7 +147,7 @@ export function MsalButton({
   //   try {
   //     const account = accounts?.[0];
   //     const response = await instance.acquireTokenSilent({ ...loginRequest, account });
-  //     const res = await fetch('/api/echo', {
+  //     const res = await fetch('/internal-api/echo', {
   //       method: 'POST',
   //       headers: {
   //         'Content-Type': 'application/json',

@@ -1,10 +1,1 @@
-version: '3.8'
 
-services:
-  next-js:
-    build: .
-    volumes:
-      - ./.env:/app/.env
-    ports:
-      - "80:3000"
-    restart: unless-stopped

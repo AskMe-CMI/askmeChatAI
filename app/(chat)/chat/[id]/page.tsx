@@ -26,7 +26,7 @@ async function getChatFromDify(id: string, userEmail: string) {
     console.log('Page getChatFromDify - Base URL:', process.env.NEXT_PUBLIC_BASE_URL);
 
     const response = await fetch(
-      `${base_url}/api/chat/${id}`,
+      `${base_url}/internal-api/chat/${id}`,
       {
         headers: {
           'Content-Type': 'application/json',
