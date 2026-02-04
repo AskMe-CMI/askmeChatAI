@@ -20,9 +20,9 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'What are the advantages',
-      label: 'of using Next.js?',
-      action: 'What are the advantages of using Next.js?',
+      title: 'Explain the concept of Object-Oriented Programming.',
+      label: 'Programming Basics',
+      action: 'Explain OOP',
     },
     {
       title: 'Write code to',

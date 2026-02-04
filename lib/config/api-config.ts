@@ -9,7 +9,7 @@
 export const API_CONFIG = {
   // Backend API Base URL
   BACKEND_BASE_URL:
-    process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:8000/api',
+    process.env.NEXT_PUBLIC_BACKEND_API_URL || 'https://ai.askme.co.th/api',
 
   // Dify API Configuration
   DIFY_BASE_URL: process.env.DIFY_BASE_URL || 'https://api.dify.ai/v1',
