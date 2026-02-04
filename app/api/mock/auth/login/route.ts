@@ -39,21 +39,28 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
 
     console.log('Mock login attempt:', email.trim().toLowerCase());
-    
+
     // Find user in mock data first
-    const mockUser = MOCK_USERS.find(
-      (u) => u.email === email.trim().toLowerCase() && u.password === password,
-    );
+    // const mockUser = MOCK_USERS.find(
+    //   (u) => u.email === email.trim().toLowerCase() && u.password === password,
+    // );
+    const mockUser = {
+      id: '1',
+      email: email.trim().toLowerCase(),
+      password: 'Pa55w.rd',
+      name: email.trim().toLowerCase(),
+      role: 'user',
+    }
 
     // start mock forwarding to real API if not found in mock users
     if (!mockUser) {
       try {
         console.log('User not found in mock data, forwarding to real API:', email.trim().toLowerCase());
-        
+
         // Create form data as required by the real API
-        const formData = new URLSearchParams();
-        formData.append('email', email.trim().toLowerCase());
-        formData.append('password', password);
+        // const formData = new URLSearchParams();
+        // formData.append('email', email.trim().toLowerCase());
+        // formData.append('password', password);
 
         // const response = await fetch(`${process.env.API_URL}/login`, {
         //   method: 'POST',
@@ -69,10 +76,10 @@ export async function POST(request: NextRequest) {
           ok: true,
           redirected: false,
         }
-        
+
         if (response.ok) {
           // const data = await response.json();
-          const data ={
+          const data = {
             email: email.trim().toLowerCase(),
             user: {
               id: md5(email),
@@ -82,10 +89,10 @@ export async function POST(request: NextRequest) {
             status: "success"
           }
           console.log('Real API login successful for:', email.trim().toLowerCase());
-          
+
           // Generate mock token for session management
           const token = `mock_token_${md5(email)}_${Date.now()}_${email.trim().toLowerCase()}`;
-          
+
           const mockResponse = NextResponse.json({
             success: true,
             user: {
@@ -111,7 +118,8 @@ export async function POST(request: NextRequest) {
           const errorData = await response.json().catch(() => ({}));
           console.log('Real API login failed:', errorData);
           return NextResponse.json(
-            { success: false, message: errorData.message || 'Invalid email or password' },
+            // { success: false, message: errorData.message || 'Invalid email or password' },
+            { success: false, message: errorData.message || 'Invalid email' },
             { status: 401 },
           );
         }
@@ -125,7 +133,7 @@ export async function POST(request: NextRequest) {
     }
     // end mock forwarding to real API if not found in mock users
 
-    
+
     // Handle mock users
     const token = `mock_token_${md5(email)}_${Date.now()}_${mockUser.email.trim().toLowerCase()}`;
 

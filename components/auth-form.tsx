@@ -16,7 +16,7 @@ export function AuthForm({
 }) {
   return (
     <Form action={action} className="flex flex-col gap-4 px-4 sm:px-16">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 pb-3">
         <Label
           htmlFor="email"
           className="text-zinc-600 font-normal dark:text-zinc-400"
@@ -29,7 +29,7 @@ export function AuthForm({
           name="email"
           className="bg-muted text-md md:text-sm"
           type="email"
-          placeholder="user@rmutl.ac.th"
+          placeholder="user@example.com"
           autoComplete="email"
           required
           autoFocus
@@ -37,7 +37,7 @@ export function AuthForm({
         />
       </div>
 
-      <div className="flex flex-col gap-2">
+      {/* <div className="flex flex-col gap-2">
         <Label
           htmlFor="password"
           className="text-zinc-600 font-normal dark:text-zinc-400"
@@ -52,7 +52,7 @@ export function AuthForm({
           type="password"
           required
         />
-      </div>
+      </div> */}
 
       {children}
     </Form>

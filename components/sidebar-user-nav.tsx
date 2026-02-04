@@ -95,12 +95,12 @@ export function SidebarUserNav({
             >
               {`Toggle ${resolvedTheme === 'light' ? 'dark' : 'light'} mode`}
             </DropdownMenuItem>
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               className="cursor-pointer"
               onSelect={() => router.push('/changelog')}
             >
               Change log
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild data-testid="user-nav-item-auth">
               <button

@@ -38,14 +38,30 @@ export function AppSidebar({ user }: { user: UserPayload | null | undefined }) {
               {/* <span className="text-lg font-semibold px-2 hover:bg-muted rounded-md cursor-pointer">
                 RMUTL Chat AI
               </span> */}
-              <img src="/images/logo.svg" alt="logo" className='w-auto h-8'/>
+              {/* <img src="/images/logo.svg" alt="logo" className='w-auto h-5'/> */}
+              <>
+                <img src="/images/logo-dark.svg" alt="logo" className='w-auto h-3 dark:hidden'/>
+                <img src="/images/logo-light.svg" alt="logo" className='w-auto h-3 hidden dark:block'/>
+              </>
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
+                 {/* <Button
                   variant="ghost"
                   type="button"
                   className="p-2 h-fit text-white"
+                  onClick={() => {
+                    setOpenMobile(false);
+                    router.push('/');
+                    router.refresh();
+                  }}
+                >
+                  <PlusIcon />
+                </Button> */}
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="p-2 h-fit text-dark dark:text-white"
                   onClick={() => {
                     setOpenMobile(false);
                     router.push('/');

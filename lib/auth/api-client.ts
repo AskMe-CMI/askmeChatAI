@@ -2,12 +2,11 @@
  * API Client for authentication with backend
  */
 
-const BACKEND_API_URL =
-  process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000/api/mock';
+const BACKEND_API_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL;
 
 export interface LoginRequest {
   email: string;
-  password: string;
+  // password: string; //jaydai04022026
 }
 
 export interface LoginResponse {
@@ -41,7 +40,7 @@ export async function loginWithBackend(
 ): Promise<LoginResponse> {
   try {
     console.log('URL:', BACKEND_API_URL);
-    
+
     const response = await fetch(`${BACKEND_API_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -49,7 +48,7 @@ export async function loginWithBackend(
       },
       body: JSON.stringify(credentials),
     });
-    
+
     const data = await response.json();
 
     if (!response.ok) {

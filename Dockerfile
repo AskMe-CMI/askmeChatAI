@@ -36,17 +36,6 @@ COPY . .
 # Install all dependencies (including devDependencies for build)
 RUN pnpm install
 
-# Set build environment variables
-# ENV NODE_ENV=production
-# ENV NEXT_TELEMETRY_DISABLED=1
-# ENV NEXT_PUBLIC_BACKEND_API_URL=http://localhost:3000/api/mock
-# ENV NEXT_PUBLIC_BASE_URL=http://localhost:3000
-# ENV API_URL=https://acm.askme.co.th/api
-# Set Dify environment variables for build time
-# ENV DIFY_API_KEY=app-da8f2LKv8lTtacCQt8xDwq7y
-# ENV DIFY_APP_ID=app-1b3e7b1f-e77b-4a0a-85ec-e45057dbebb1
-# ENV DIFY_BASE_URL=https://dify.askme.co.th/v1
-
 # Build Next.js application
 RUN pnpm build
 
