@@ -40,7 +40,7 @@ export default function RegisterAltPage() {
                 type: 'success',
                 description: state.message || 'Registration successful!',
             });
-            router.push('/register/success');
+            router.push('/registerCloudDrive/success');
         }
     }, [state.status, state.message, router]);
 

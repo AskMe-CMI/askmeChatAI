@@ -149,11 +149,8 @@ export function CreditCheckButton() {
                             </div>
 
                             {/* Spend Info */}
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
-                                    <div className="text-xs text-muted-foreground">Request Count</div>
-                                    <div className="text-lg font-semibold text-foreground">{formatNumber(stats.usage.request_count)}</div>
-                                </div>
+                            <div className="grid grid-cols-1 gap-3 mb-4">
+
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Total Spend</div>
                                     <div className="text-lg font-semibold text-foreground">${stats.usage.spend.toFixed(5)}</div>
@@ -166,26 +163,7 @@ export function CreditCheckButton() {
                                     <span className="text-muted-foreground">Total Quota</span>
                                     <span className="text-foreground">{formatNumber(stats.tokens.limit)}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Resets on</span>
-                                    <span className="text-foreground">
-                                        {stats.tokens.expiry_date ? (
-                                            <>
-                                                {new Date(stats.tokens.expiry_date).toLocaleDateString('en-US', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric',
-                                                })}{' '}
-                                                {new Date(stats.tokens.expiry_date).toLocaleTimeString('en-US', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                })}
-                                            </>
-                                        ) : (
-                                            'N/A'
-                                        )}
-                                    </span>
-                                </div>
+
                             </div>
                         </>
                     ) : (

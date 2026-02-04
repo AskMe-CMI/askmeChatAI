@@ -54,6 +54,8 @@ export function Chat({
   const [actualChatId, setActualChatId] = useState<string>(id);
   // Track the current model for mid-chat model switching
   const [currentModel, setCurrentModel] = useState<string>(initialChatModel);
+  // Use ref to avoid stale closure in prepareSendMessagesRequest
+  const currentModelRef = useRef<string>(initialChatModel);
   // Store message metadata separately to avoid being overwritten by streaming
   // Key by message ID to preserve metadata for previous messages
   const [messageMetadata, setMessageMetadata] = useState<Record<string, { usage?: any; model?: string; createdAt?: string }>>({});
@@ -64,6 +66,7 @@ export function Chat({
   const handleModelChange = (newModelId: string) => {
     console.log('🔄 Model changed mid-chat:', { from: currentModel, to: newModelId });
     setCurrentModel(newModelId);
+    currentModelRef.current = newModelId; // Update ref for transport closure
   };
 
   // Initialize messageMetadata from initialMessages on mount
@@ -123,11 +126,12 @@ export function Chat({
         id,
         body,
       }: { messages: any[]; id: string; body?: any }) {
+        console.log('📤 Preparing request with model:', currentModelRef.current);
         return {
           body: {
             id: actualChatId,
             message: messages.at(-1),
-            selectedChatModel: currentModel,
+            selectedChatModel: currentModelRef.current,
             selectedVisibilityType: visibilityType,
             ...body,
           },

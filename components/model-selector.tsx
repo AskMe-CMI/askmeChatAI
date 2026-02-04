@@ -135,10 +135,13 @@ export function ModelSelector({
                 await saveChatModelAsCookie(id);
 
                 // Call callback if provided, otherwise redirect to new chat
+                console.log('🔄 Model selected:', id, 'hasCallback:', !!onModelChange);
                 if (onModelChange) {
+                  console.log('✅ Calling onModelChange callback');
                   onModelChange(id);
                 } else {
                   // Fallback: redirect to new chat for backwards compatibility
+                  console.log('⚠️ No onModelChange callback, redirecting to /');
                   window.location.href = '/';
                 }
               }}
@@ -151,12 +154,12 @@ export function ModelSelector({
               >
                 <div className="flex flex-col gap-1 items-start">
                   <div>{chatModel.name}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs opacity-75">
                     {chatModel.description}
                   </div>
                 </div>
 
-                <div className="text-foreground dark:text-foreground opacity-0 group-data-[active=true]/item:opacity-100">
+                <div className="opacity-0 group-data-[active=true]/item:opacity-100">
                   <CheckCircleFillIcon />
                 </div>
               </button>

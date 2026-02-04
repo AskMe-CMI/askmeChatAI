@@ -267,7 +267,7 @@ export function SidebarHistory({
                 return (
                   <div className="flex flex-col gap-6">
                     {groupedChats.today.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Today
                         </div>
@@ -294,7 +294,7 @@ export function SidebarHistory({
                     )}
 
                     {groupedChats.yesterday.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Yesterday
                         </div>
@@ -321,7 +321,7 @@ export function SidebarHistory({
                     )}
 
                     {groupedChats.lastWeek.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Last 7 days
                         </div>
@@ -348,7 +348,7 @@ export function SidebarHistory({
                     )}
 
                     {groupedChats.lastMonth.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Last 30 days
                         </div>
@@ -375,7 +375,7 @@ export function SidebarHistory({
                     )}
 
                     {groupedChats.older.length > 0 && (
-                      <div>
+                      <div className="flex flex-col gap-2">
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
                           Older than last month
                         </div>

@@ -281,34 +281,13 @@ export async function POST(request: Request) {
           return new ChatSDKError('bad_request:api', 'Failed to create backend session').toResponse();
         }
 
-        // Check for model mismatch and create new session if needed
+        // Model can now be changed mid-chat without creating a new session
+        // The selectedChatModel will be passed to sendMessageToSession and backend will use it
         let finalSessionId = backendSessionId;
 
-        // Get token for Backend API
-        const { getStoredToken } = await import('@/lib/auth/local-auth');
-        const token = await getStoredToken();
+        // Log model info for debugging
+        console.log('📋 Using session:', finalSessionId, 'with model:', selectedChatModel);
 
-        try {
-          const sessionCheckRes = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${backendSessionId}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          if (sessionCheckRes.ok) {
-            const currentSession = await sessionCheckRes.json();
-            if (currentSession.model !== selectedChatModel) {
-              console.log('🔄 Model changed from', currentSession.model, 'to', selectedChatModel, '- Creating NEW session');
-              const { createBackendSession } = await import('@/lib/ai/backend-provider');
-              const newTitle = userMessageText.substring(0, 50) || 'New Chat';
-              const newSession = await createBackendSession(newTitle, selectedChatModel);
-              if (newSession) {
-                finalSessionId = newSession.id;
-                console.log('✨ Created new session for model switch:', finalSessionId);
-              }
-            }
-          }
-        } catch (checkErr) {
-          console.warn('⚠️ Failed to check session model:', checkErr);
-        }
 
         // Extract attachments from message parts
         const attachments = message.parts

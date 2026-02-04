@@ -326,6 +326,8 @@ function PureMultimodalInput({
 
             if (status !== 'ready') {
               toast.error('Please wait for the model to finish its response!');
+            } else if (input.trim().length === 0) {
+              toast.error('กรุณาพิมพ์ข้อความก่อนส่ง');
             } else {
               submitForm();
             }
@@ -345,6 +347,7 @@ function PureMultimodalInput({
             input={input}
             submitForm={submitForm}
             uploadQueue={uploadQueue}
+            attachments={attachments}
           />
         )}
       </div>
@@ -419,10 +422,12 @@ function PureSendButton({
   submitForm,
   input,
   uploadQueue,
+  attachments,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
+  attachments: Array<Attachment>;
 }) {
   return (
     <Button
@@ -434,7 +439,7 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.length === 0 || uploadQueue.length > 0}
+      disabled={input.trim().length === 0 || uploadQueue.length > 0}
     >
       <ArrowUpIcon size={14} />
     </Button>
@@ -445,5 +450,7 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.uploadQueue.length !== nextProps.uploadQueue.length)
     return false;
   if (prevProps.input !== nextProps.input) return false;
+  if (prevProps.attachments.length !== nextProps.attachments.length)
+    return false;
   return true;
 });
