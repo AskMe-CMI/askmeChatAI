@@ -38,7 +38,7 @@ export async function signInWithAPI(
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_NAME, result.token, COOKIE_OPTIONS);
 
-    // console.log('Login successful, token stored');
+    console.log('Login successful, token using:', result.token);
     return {
       success: true,
     };

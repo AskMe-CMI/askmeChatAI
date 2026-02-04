@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
+import { backendApi } from '@/lib/config/api-client';
 
 export async function GET() {
     try {
@@ -15,23 +16,27 @@ export async function GET() {
             );
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/v1/models`, {
-            method: 'GET',
+        // Use backendApi which has built-in logging
+        const response = await backendApi.get('/v1/models', {
+            token: token.value,
             headers: {
-                'Authorization': `Bearer ${token.value}`,
-                'Content-Type': 'application/json',
-            },
+                'Accept': 'application/json',
+            }
         });
 
-        if (!response.ok) {
+        if (!response.success) {
+            console.error('Models API connection error:', {
+                status: response.status,
+                message: response.message,
+                error: response.error
+            });
             return NextResponse.json(
-                { error: 'Failed to fetch models' },
-                { status: response.status }
+                { error: `Failed to fetch models: ${response.status}`, details: response.message },
+                { status: response.status || 500 }
             );
         }
 
-        const data = await response.json();
-        return NextResponse.json(data);
+        return NextResponse.json(response.data);
     } catch (error) {
         console.error('Error fetching models:', error);
         return NextResponse.json(

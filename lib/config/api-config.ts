@@ -9,7 +9,7 @@
 export const API_CONFIG = {
   // Backend API Base URL
   BACKEND_BASE_URL:
-    process.env.NEXT_PUBLIC_BACKEND_API_URL,
+    process.env.BACKEND_API_URL,
 
   // Dify API Configuration
   DIFY_BASE_URL: process.env.DIFY_BASE_URL,
@@ -183,7 +183,10 @@ export const getDifyHeaders = () => {
 
 export const logApiCall = (method: string, url: string, data?: any) => {
   if (ENV_CONFIG.ENABLE_API_LOGGING) {
-    console.log(`[API] ${method} ${url}`, data ? { data } : '');
+    console.log(`[API REQUEST] ${method} ${url}`);
+    if (data) {
+      console.dir(data, { depth: null, colors: true });
+    }
   }
 };
 
@@ -194,9 +197,14 @@ export const logApiResponse = (
   response?: any,
 ) => {
   if (ENV_CONFIG.ENABLE_API_LOGGING) {
-    console.log(
-      `[API] ${method} ${url} - ${status}`,
-      response ? { response } : '',
-    );
+    console.log(`[API RESPONSE] ${method} ${url} - ${status}`);
+    if (response) {
+      try {
+        // Try to pretty print JSON if possible
+        console.dir(response, { depth: null, colors: true });
+      } catch (e) {
+        console.log(response);
+      }
+    }
   }
 };
