@@ -61,7 +61,7 @@ export default function LoginPage() {
             Use your account to continue to AskMe Chat AI
           </p>
         </div>
-        {process.env.NEXT_PUBLIC_ALLOW_LOCAL_LOGIN.toLowerCase() !== 'false' && (
+        {/* {process.env.NEXT_PUBLIC_ALLOW_LOCAL_LOGIN.toLowerCase() !== 'false' && ( */}
           <>
             <AuthForm action={handleSubmit} defaultEmail={email}>
               <SubmitButton isSuccessful={state.status === 'success'}>
@@ -72,7 +72,7 @@ export default function LoginPage() {
               <Separator className="bg-zinc-600"/>
             </div> */}
           </>
-        )}
+        {/* )} */}
         {/* <div className="flex flex-col px-4 sm:px-16">
           <MsalButton isSuccessful={state.status === 'success'}>
             <svg xmlns="http://www.w3.org/2000/svg" width="1rem" height="1rem" viewBox="0 0 256 256"><path fill="#F1511B" d="M121.666 121.666H0V0h121.666z"/><path fill="#80CC28" d="M256 121.666H134.335V0H256z"/><path fill="#00ADEF" d="M121.663 256.002H0V134.336h121.663z"/><path fill="#FBBC09" d="M256 256.002H134.335V134.336H256z"/></svg> Sign in with Microsoft
