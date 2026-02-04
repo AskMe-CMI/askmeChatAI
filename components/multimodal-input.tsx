@@ -59,6 +59,7 @@ function PureMultimodalInput({
   sendMessage,
   className,
   selectedVisibilityType,
+  isCreditExhausted,
 }: {
   chatId: string;
   input: string;
@@ -72,6 +73,7 @@ function PureMultimodalInput({
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   className?: string;
   selectedVisibilityType: VisibilityType;
+  isCreditExhausted?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -374,15 +376,17 @@ function PureMultimodalInput({
       <Textarea
         data-testid="multimodal-input"
         ref={textareaRef}
-        placeholder="Send a message..."
+        placeholder={isCreditExhausted ? "เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ" : "Send a message..."}
         value={input}
         onChange={handleInput}
         className={cx(
           'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-sidebar pb-10 dark:border-zinc-700 shadow-lg',
+          isCreditExhausted && 'opacity-60 cursor-not-allowed',
           className,
         )}
         rows={2}
         autoFocus
+        disabled={isCreditExhausted}
         onKeyDown={(event) => {
           console.log(
             '🎯 Textarea keydown:',
@@ -415,7 +419,7 @@ function PureMultimodalInput({
       />
 
       <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} />
+        <AttachmentsButton fileInputRef={fileInputRef} status={status} isCreditExhausted={isCreditExhausted} />
       </div>
 
       <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
@@ -428,6 +432,7 @@ function PureMultimodalInput({
             uploadQueue={uploadQueue}
             attachments={attachments}
             isUploading={isUploading}
+            isCreditExhausted={isCreditExhausted}
           />
         )}
       </div>
@@ -443,6 +448,7 @@ export const MultimodalInput = memo(
     if (!equal(prevProps.attachments, nextProps.attachments)) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
+    if (prevProps.isCreditExhausted !== nextProps.isCreditExhausted) return false;
 
     return true;
   },
@@ -451,9 +457,11 @@ export const MultimodalInput = memo(
 function PureAttachmentsButton({
   fileInputRef,
   status,
+  isCreditExhausted,
 }: {
   fileInputRef: React.MutableRefObject<HTMLInputElement | null>;
   status: UseChatHelpers<ChatMessage>['status'];
+  isCreditExhausted?: boolean;
 }) {
   return (
     <Button
@@ -463,7 +471,7 @@ function PureAttachmentsButton({
         event.preventDefault();
         fileInputRef.current?.click();
       }}
-      disabled={status !== 'ready'}
+      disabled={status !== 'ready' || isCreditExhausted}
       variant="ghost"
       size="sm"
     >
@@ -504,12 +512,14 @@ function PureSendButton({
   uploadQueue,
   attachments,
   isUploading,
+  isCreditExhausted,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
   attachments: Array<Attachment>;
   isUploading: boolean;
+  isCreditExhausted?: boolean;
 }) {
   return (
     <Button
@@ -521,7 +531,7 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.trim().length === 0 || uploadQueue.length > 0 || isUploading}
+      disabled={input.trim().length === 0 || uploadQueue.length > 0 || isUploading || isCreditExhausted}
     >
       <ArrowUpIcon size={14} />
     </Button>
@@ -535,6 +545,7 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.attachments.length !== nextProps.attachments.length)
     return false;
   if (prevProps.isUploading !== nextProps.isUploading) return false;
+  if (prevProps.isCreditExhausted !== nextProps.isCreditExhausted) return false;
   return true;
 });
 

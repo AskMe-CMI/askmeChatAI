@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoaderIcon } from '@/components/icons';
 import { getUsageStatsAction, type UsageStatsResponse } from '@/app/(auth)/api-actions';
+import { Gem } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CreditCheckButton() {
@@ -18,6 +19,20 @@ export function CreditCheckButton() {
     const [stats, setStats] = useState<UsageStatsResponse | null>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+
+    const fetchStats = async (showLoading = false) => {
+        if (showLoading) setIsLoading(true);
+        try {
+            const result = await getUsageStatsAction();
+            if (result.success && result.data) {
+                setStats(result.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats', error);
+        } finally {
+            if (showLoading) setIsLoading(false);
+        }
+    };
 
     // Close panel when clicking outside
     useEffect(() => {
@@ -38,47 +53,50 @@ export function CreditCheckButton() {
         }
     }, [isOpen]);
 
-    // Handle button click with loading state
+    // Initial fetch and listen for updates
+    useEffect(() => {
+        fetchStats();
+
+        const handleCreditUpdate = () => fetchStats();
+        window.addEventListener('credit-updated', handleCreditUpdate);
+
+        return () => {
+            window.removeEventListener('credit-updated', handleCreditUpdate);
+        };
+    }, []);
+
+    // Handle button click
     const handleClick = async () => {
         if (isOpen) {
             setIsOpen(false);
             return;
         }
 
-        setIsLoading(true);
         setIsOpen(true);
-
-        try {
-            const result = await getUsageStatsAction();
-
-            if (result.success && result.data) {
-                setStats(result.data);
-            } else {
-                toast.error(result.message || 'Failed to fetch credit usage');
-                // Optional: keep panel open to show error state or close it? 
-                // Currently keeping it open but with no data it might look empty if we don't handle it.
-                // But we will handle "no stats" in render.
-            }
-        } catch (error) {
-            console.error('Failed to fetch stats', error);
-            toast.error('An error occurred while fetching credits');
-        } finally {
-            setIsLoading(false);
-        }
+        // Always refresh when opening
+        await fetchStats(true);
     };
 
-    const percentage = stats ? stats.tokens.percentage_used : 0;
-    const remainingPercent = 100 - percentage;
+    const percentage = stats ? Math.min(stats.tokens.percentage_used, 100) : 0;
+    // Calculate display values ensuring no negative remaining or overflow used
+    const displayUsed = stats ? Math.min(stats.tokens.used, stats.tokens.limit) : 0;
+    const displayRemaining = stats ? Math.max(stats.tokens.remaining, 0) : 0;
+    const displayRemainingPercent = Math.max(100 - (stats?.tokens.percentage_used ?? 0), 0);
 
     const getStatusColor = () => {
-        if (remainingPercent < 20) return 'text-red-500';
-        if (remainingPercent <= 50) return 'text-yellow-500';
+        if (!stats) return 'text-muted-foreground';
+        // Use raw percentage for color logic, but clamp for display
+        const actualRemaining = 100 - stats.tokens.percentage_used;
+        if (actualRemaining < 20) return 'text-red-500';
+        if (actualRemaining <= 50) return 'text-yellow-500';
         return 'text-green-500';
     };
 
     const getProgressColor = () => {
-        if (remainingPercent < 20) return 'bg-red-500';
-        if (remainingPercent <= 50) return 'bg-yellow-500';
+        if (!stats) return 'bg-muted';
+        const actualRemaining = 100 - stats.tokens.percentage_used;
+        if (actualRemaining < 20) return 'bg-red-500';
+        if (actualRemaining <= 50) return 'bg-yellow-500';
         return 'bg-green-500';
     };
 
@@ -104,7 +122,7 @@ export function CreditCheckButton() {
                     </div>
 
                     {/* Loading State */}
-                    {isLoading ? (
+                    {isLoading && !stats ? (
                         <div className="flex flex-col items-center justify-center py-8">
                             <div className="w-8 h-8 animate-spin text-muted-foreground">
                                 <LoaderIcon size={32} />
@@ -113,16 +131,11 @@ export function CreditCheckButton() {
                         </div>
                     ) : stats ? (
                         <>
-                            {/* User Info (Optional) */}
-                            {/* <div className="text-xs text-muted-foreground mb-2 truncate">
-                                {stats.email}
-                            </div> */}
-
                             {/* Progress Bar */}
                             <div className="space-y-2 mb-4">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Remaining</span>
-                                    <span className={getStatusColor()}>{(100 - percentage).toFixed(1)}%</span>
+                                    <span className={getStatusColor()}>{displayRemainingPercent.toFixed(1)}%</span>
                                 </div>
                                 <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                                     <div
@@ -136,19 +149,17 @@ export function CreditCheckButton() {
                             <div className="grid grid-cols-2 gap-3 mb-4">
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Used</div>
-                                    <div className="text-xl font-bold text-foreground">{formatNumber(stats.tokens.used)}</div>
+                                    <div className="text-xl font-bold text-foreground">{formatNumber(displayUsed)}</div>
                                     <div className="text-xs text-muted-foreground">credits</div>
                                 </div>
                                 <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
                                     <div className="text-xs text-muted-foreground">Remaining</div>
                                     <div className={`text-xl font-bold ${getStatusColor()}`}>
-                                        {formatNumber(stats.tokens.remaining)}
+                                        {formatNumber(displayRemaining)}
                                     </div>
                                     <div className="text-xs text-muted-foreground">credits</div>
                                 </div>
                             </div>
-
-
 
                             {/* Additional Info */}
                             <div className="space-y-1 text-sm border-t pt-3">
@@ -156,12 +167,11 @@ export function CreditCheckButton() {
                                     <span className="text-muted-foreground">Total Quota</span>
                                     <span className="text-foreground">{formatNumber(stats.tokens.limit)}</span>
                                 </div>
-
                             </div>
                         </>
                     ) : (
                         <div className="py-8 text-center text-muted-foreground text-sm">
-                            No usage data available
+                            {isLoading ? 'Loading...' : 'No usage data available'}
                         </div>
                     )}
                 </div>
@@ -173,16 +183,16 @@ export function CreditCheckButton() {
                 variant="outline"
                 size="icon"
                 onClick={handleClick}
-                disabled={isLoading}
+                disabled={isLoading && !isOpen}
                 className="h-12 w-12 rounded-full shadow-lg bg-background hover:bg-muted border-2"
                 title="Check Credit"
             >
-                {isLoading ? (
+                {isLoading && !stats ? (
                     <div className="w-5 h-5 animate-spin">
                         <LoaderIcon size={20} />
                     </div>
                 ) : (
-                    <span className="text-lg">💎</span>
+                    <Gem className={`w-5 h-5 ${getStatusColor()}`} />
                 )}
             </Button>
         </div>

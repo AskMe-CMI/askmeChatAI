@@ -22,6 +22,16 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { ChatSDKError } from '@/lib/errors';
 import type { Attachment, ChatMessage } from '@/lib/types';
 import { useDataStream } from './data-stream-provider';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { getUsageStatsAction } from '@/app/(auth)/api-actions';
 
 export function Chat({
   id,
@@ -61,6 +71,11 @@ export function Chat({
   const [messageMetadata, setMessageMetadata] = useState<Record<string, { usage?: any; model?: string; createdAt?: string }>>({});
   // Track the latest assistant message ID for applying incoming metadata (useRef to avoid closure issues)
   const latestAssistantIdRef = useRef<string | null>(null);
+  // Credit limit modal state
+  const [showCreditLimitModal, setShowCreditLimitModal] = useState(false);
+  const [creditLimitMessage, setCreditLimitMessage] = useState('');
+  // Track if credit is exhausted (for disabling input on page load)
+  const [isCreditExhausted, setIsCreditExhausted] = useState(false);
 
   // Handle model change mid-chat
   const handleModelChange = (newModelId: string) => {
@@ -68,6 +83,27 @@ export function Chat({
     setCurrentModel(newModelId);
     currentModelRef.current = newModelId; // Update ref for transport closure
   };
+
+  // Check credit on page load/refresh
+  useEffect(() => {
+    const checkCredit = async () => {
+      try {
+        const result = await getUsageStatsAction();
+        if (result.success && result.data) {
+          const remainingPercent = 100 - (result.data.tokens.percentage_used || 0);
+          console.log('💰 Initial credit check:', { remainingPercent });
+          if (remainingPercent <= 0) {
+            setIsCreditExhausted(true);
+            setInput(''); // Clear any existing input
+            // No modal on page load - just block the input
+          }
+        }
+      } catch (error) {
+        console.error('⚠️ Failed to check credit on load:', error);
+      }
+    };
+    checkCredit();
+  }, []);
 
   // Initialize messageMetadata from initialMessages on mount
   // This preserves metadata (createdAt, usage, model) from history when new messages are sent
@@ -197,10 +233,26 @@ export function Chat({
         return prev;
       });
       mutate(unstable_serialize(getChatHistoryPaginationKey));
+      // Dispatch event to update credit stats
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('credit-updated'));
+      }
     },
     onError: (error: unknown) => {
       console.error('❌ Chat onError:', error);
+
+      // Check for credit limit error (429 with Thai message)
       if (error instanceof ChatSDKError) {
+        const errorCause = (error as any).cause;
+        const errorMessage = error.message || '';
+
+        // Check if this is a credit limit error
+        if (error.message.includes('เครดิตหมดแล้ว') || errorCause?.includes('เครดิตหมดแล้ว')) {
+          setCreditLimitMessage(errorCause || error.message);
+          setShowCreditLimitModal(true);
+          return;
+        }
+
         toast({
           type: 'error',
           description: error.message,
@@ -365,6 +417,7 @@ export function Chat({
               setMessages={setMessages}
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
+              isCreditExhausted={isCreditExhausted}
             />
           )}
         </div>
@@ -386,6 +439,27 @@ export function Chat({
         isReadonly={isReadonly}
         selectedVisibilityType={visibilityType}
       />
+
+      {/* Credit Limit Modal */}
+      <AlertDialog open={showCreditLimitModal} onOpenChange={setShowCreditLimitModal}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-500">⚠️ เครดิตหมด</AlertDialogTitle>
+            <AlertDialogDescription className="text-base">
+              {creditLimitMessage || 'เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                window.location.reload();
+              }}
+            >
+              ตกลง
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -30,8 +30,9 @@ export async function fetchWithErrorHandlers(
     const response = await fetch(input, init);
 
     if (!response.ok) {
-      const { code, cause } = await response.json();
-      throw new ChatSDKError(code as ErrorCode, cause);
+      const { code, cause, message } = await response.json();
+      // Use message from API if available (e.g., Thai credit limit message)
+      throw new ChatSDKError(code as ErrorCode, message || cause);
     }
 
     return response;
@@ -100,7 +101,7 @@ export function convertToUIMessages(
   return messages.map((message) => ({
     id: message.id,
     role: message.role as 'user' | 'assistant' | 'system',
-  parts: (message as any).parts as any[],
+    parts: (message as any).parts as any[],
     metadata: {
       createdAt: formatISO(message.createdAt),
     },

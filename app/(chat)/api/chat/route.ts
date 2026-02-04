@@ -119,6 +119,53 @@ export async function POST(request: Request) {
       return new ChatSDKError('rate_limit:chat').toResponse();
     }
 
+    // Check credit/token remaining before processing chat
+    // If remaining <= 0%, block the chat request
+    // If remaining > 0%, allow even if current message would exceed the limit
+    try {
+      const { getStoredToken } = await import('@/lib/auth/local-auth');
+      const token = await getStoredToken();
+
+      if (token && BACKEND_API_URL) {
+        const usageResponse = await fetch(`${BACKEND_API_URL}/api/token-usage/my-usage`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'accept': 'application/json'
+          },
+          cache: 'no-store'
+        });
+
+        if (usageResponse.ok) {
+          const usageData = await usageResponse.json();
+          const remainingPercent = 100 - (usageData.usage_percentage || 0);
+
+          console.log('💰 Credit Check:', {
+            used: usageData.tokens_used,
+            limit: usageData.token_limit,
+            usagePercentage: usageData.usage_percentage,
+            remainingPercent,
+            limitReached: usageData.limit_reached
+          });
+
+          // Block if remaining is 0% or less (completely exhausted)
+          if (remainingPercent <= 0) {
+            console.log('🚫 Credit exhausted - blocking chat request');
+            return Response.json(
+              {
+                code: 'rate_limit:chat',
+                message: 'เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ'
+              },
+              { status: 429 }
+            );
+          }
+        }
+      }
+    } catch (creditError) {
+      // Log but don't block chat if credit check fails
+      console.error('⚠️ Credit check failed (continuing anyway):', creditError);
+    }
+
     const chat = await getChatById({ id });
 
     console.log('📝 Chat API Debug - Chat Lookup:', {
