@@ -30,6 +30,22 @@ import type { Attachment, ChatMessage } from '@/lib/types';
 import { SuggestedActions } from './suggested-actions';
 import { uploadFileAction } from '@/app/(chat)/actions/upload';
 
+// File validation constants
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const ALLOWED_FILE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'text/plain',
+];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.txt'];
+
+// Extended attachment type that includes pending file for upload
+export interface PendingAttachment extends Attachment {
+  file?: File; // File object for pending uploads
+}
+
 function PureMultimodalInput({
   chatId,
   input,
@@ -108,8 +124,9 @@ function PureMultimodalInput({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const submitForm = useCallback(() => {
+  const submitForm = useCallback(async () => {
     console.log('🚀 submitForm called with:', {
       chatId,
       input,
@@ -117,9 +134,43 @@ function PureMultimodalInput({
       attachmentsCount: attachments.length,
     });
 
+    // Upload pending files before sending
+    const pendingAttachments = attachments as PendingAttachment[];
+    const uploadedAttachments: Attachment[] = [];
+
+    if (pendingAttachments.some(a => a.file)) {
+      setIsUploading(true);
+      try {
+        for (const attachment of pendingAttachments) {
+          if (attachment.file) {
+            // Upload the file
+            const result = await uploadFile(attachment.file);
+            if (result) {
+              uploadedAttachments.push(result);
+            } else {
+              toast.error(`Failed to upload ${attachment.name}`);
+              setIsUploading(false);
+              return; // Stop if any upload fails
+            }
+          } else {
+            // Already uploaded (has URL)
+            uploadedAttachments.push(attachment);
+          }
+        }
+      } catch (error) {
+        console.error('Error uploading files:', error);
+        toast.error('Failed to upload files');
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    } else {
+      uploadedAttachments.push(...attachments);
+    }
+
     console.log('📤 Calling sendMessage with:', {
       role: 'user',
-      partsCount: attachments.length + 1,
+      partsCount: uploadedAttachments.length + 1,
       textLength: input.length,
     });
 
@@ -127,7 +178,7 @@ function PureMultimodalInput({
       role: 'user',
       createdAt: new Date().toISOString(),
       parts: [
-        ...attachments.map((attachment) => ({
+        ...uploadedAttachments.map((attachment) => ({
           type: 'file' as const,
           url: attachment.url,
           name: attachment.name,
@@ -186,29 +237,48 @@ function PureMultimodalInput({
   };
 
   const handleFileChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
+    (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
-      setUploadQueue(files.map((file) => file.name));
+      // Validate and add files locally without uploading
+      const validFiles: PendingAttachment[] = [];
 
-      try {
-        const uploadPromises = files.map((file) => uploadFile(file));
-        const uploadedAttachments = await Promise.all(uploadPromises);
-        const successfullyUploadedAttachments = uploadedAttachments.filter(
-          (
-            attachment,
-          ): attachment is { url: string; name: string; contentType: string } =>
-            attachment !== undefined && attachment !== null,
-        );
+      for (const file of files) {
+        // Validate file type
+        if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+          const ext = file.name.toLowerCase().split('.').pop();
+          if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) {
+            toast.error(`ไฟล์ ${file.name} ไม่รองรับ กรุณาเลือกไฟล์ประเภท: ${ALLOWED_EXTENSIONS.join(', ')}`);
+            continue;
+          }
+        }
 
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+          toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 2MB กรุณาเลือกไฟล์ที่มีขนาดเล็กกว่า`);
+          continue;
+        }
+
+        // Create local preview URL
+        const localUrl = URL.createObjectURL(file);
+        validFiles.push({
+          url: localUrl,
+          name: file.name,
+          contentType: file.type,
+          file: file, // Store the File object for later upload
+        });
+      }
+
+      if (validFiles.length > 0) {
         setAttachments((currentAttachments) => [
           ...currentAttachments,
-          ...successfullyUploadedAttachments,
+          ...validFiles,
         ]);
-      } catch (error) {
-        console.error('Error uploading files!', error);
-      } finally {
-        setUploadQueue([]);
+      }
+
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
       }
     },
     [setAttachments],
@@ -231,7 +301,7 @@ function PureMultimodalInput({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="absolute left-1/2 bottom-28 -translate-x-1/2 z-50"
+            className="absolute left-1/2 bottom-28 -translate-x-1/2 z-10"
           >
             <Button
               data-testid="scroll-to-bottom-button"
@@ -275,7 +345,16 @@ function PureMultimodalInput({
           className="flex flex-row gap-2 overflow-x-scroll items-end"
         >
           {attachments.map((attachment) => (
-            <PreviewAttachment key={attachment.url} attachment={attachment} />
+            <PreviewAttachment
+              key={attachment.url}
+              attachment={attachment}
+              onRemove={() => {
+                setAttachments((currentAttachments) =>
+                  currentAttachments.filter((a) => a.url !== attachment.url),
+                );
+                toast.success('ลบรูปภาพเรียบร้อยแล้ว');
+              }}
+            />
           ))}
 
           {uploadQueue.map((filename) => (
@@ -348,6 +427,7 @@ function PureMultimodalInput({
             submitForm={submitForm}
             uploadQueue={uploadQueue}
             attachments={attachments}
+            isUploading={isUploading}
           />
         )}
       </div>
@@ -423,11 +503,13 @@ function PureSendButton({
   input,
   uploadQueue,
   attachments,
+  isUploading,
 }: {
   submitForm: () => void;
   input: string;
   uploadQueue: Array<string>;
   attachments: Array<Attachment>;
+  isUploading: boolean;
 }) {
   return (
     <Button
@@ -439,7 +521,7 @@ function PureSendButton({
         event.preventDefault();
         submitForm();
       }}
-      disabled={input.trim().length === 0 || uploadQueue.length > 0}
+      disabled={input.trim().length === 0 || uploadQueue.length > 0 || isUploading}
     >
       <ArrowUpIcon size={14} />
     </Button>
@@ -452,5 +534,7 @@ const SendButton = memo(PureSendButton, (prevProps, nextProps) => {
   if (prevProps.input !== nextProps.input) return false;
   if (prevProps.attachments.length !== nextProps.attachments.length)
     return false;
+  if (prevProps.isUploading !== nextProps.isUploading) return false;
   return true;
 });
+

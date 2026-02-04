@@ -148,14 +148,7 @@ export function CreditCheckButton() {
                                 </div>
                             </div>
 
-                            {/* Spend Info */}
-                            <div className="grid grid-cols-1 gap-3 mb-4">
 
-                                <div className="p-3 rounded-lg bg-muted/50 space-y-0.5">
-                                    <div className="text-xs text-muted-foreground">Total Spend</div>
-                                    <div className="text-lg font-semibold text-foreground">${stats.usage.spend.toFixed(5)}</div>
-                                </div>
-                            </div>
 
                             {/* Additional Info */}
                             <div className="space-y-1 text-sm border-t pt-3">
