@@ -4,7 +4,7 @@ import { ChevronUp } from 'lucide-react';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { useMsal } from "@azure/msal-react";
+// import { useMsal } from "@azure/msal-react";
 
 import {
   DropdownMenu,
@@ -26,14 +26,14 @@ export function SidebarUserNav({
 }: { user: UserPayload | null | undefined }) {
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
-  const { instance, accounts } = useMsal();
+  // const { instance, accounts } = useMsal();
   console.log('user: ',user);
   
   const handleSignOut = async () => {
     try {
-      if(accounts.length > 0){
-        await instance.logoutPopup();
-      }
+      // if(accounts.length > 0){
+      //   await instance.logoutPopup();
+      // }
       await signOut();
     } catch (e) { 
       console.error(e); 

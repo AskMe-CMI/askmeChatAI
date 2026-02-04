@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useActionState, useTransition } from 'react';
+import { useEffect, useState, useActionState, useTransition, Suspense } from 'react';
 import { toast } from '@/components/toast';
 import { LoaderIcon } from '@/components/icons';
 import { loginWithBackendAPI, type LoginActionState } from '@/app/(auth)/api-actions-oidc-mock';
@@ -16,7 +16,7 @@ import { loginWithBackendAPI, type LoginActionState } from '@/app/(auth)/api-act
 
 // import { debugOIDCEnvironment } from '@/lib/auth/oidc-config';
 
-export default function OIDCCallbackPage() {
+function OIDCCallbackContent() {
 // export default function OIDCCallbackPage(req: NextApiRequest, res: NextApiResponse) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -308,5 +308,21 @@ export default function OIDCCallbackPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Wrapper component with Suspense boundary for useSearchParams
+export default function OIDCCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-dvh w-screen items-center justify-center bg-background">
+        <div className="flex items-center gap-3">
+          <LoaderIcon size={24} />
+          <span>Loading...</span>
+        </div>
+      </div>
+    }>
+      <OIDCCallbackContent />
+    </Suspense>
   );
 }

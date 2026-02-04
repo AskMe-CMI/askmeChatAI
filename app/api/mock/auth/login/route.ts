@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
           // Set session cookie
           mockResponse.cookies.set('session', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            secure: false,
             sameSite: 'lax',
             maxAge: 60 * 60 * 24 * 7, // 7 days
           });
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
     // Set session cookie (same name as auth.ts)
     response.cookies.set('session', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: false,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });

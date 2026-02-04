@@ -147,7 +147,7 @@ const PureHitboxLayer = ({
   result,
   setArtifact,
 }: {
-  hitboxRef: React.RefObject<HTMLDivElement>;
+  hitboxRef: React.RefObject<HTMLDivElement | null>;
   result: any;
   setArtifact: (
     updaterFn: UIArtifact | ((currentArtifact: UIArtifact) => UIArtifact),
@@ -181,7 +181,7 @@ const PureHitboxLayer = ({
   return (
     <div
       className="size-full absolute top-0 left-0 rounded-xl z-10"
-      ref={hitboxRef}
+      ref={hitboxRef as any}
       onClick={handleClick}
       role="presentation"
       aria-hidden="true"
