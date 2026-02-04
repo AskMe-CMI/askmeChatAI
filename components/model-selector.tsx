@@ -70,7 +70,7 @@ export function ModelSelector({
   useEffect(() => {
     async function fetchModels() {
       try {
-        const response = await fetch('/api/models');
+        const response = await fetch('/api-i/models');
         if (response.ok) {
           const data = await response.json();
           if (data.data && Array.isArray(data.data)) {

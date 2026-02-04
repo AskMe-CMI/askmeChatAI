@@ -28,16 +28,16 @@ export function MsalButton({
   const [isPending, startTransition] = useTransition();
   // const [email, setEmail] = useState('');
 
-  const[state, formAction] = useActionState<LoginActionState, FormData>(
+  const [state, formAction] = useActionState<LoginActionState, FormData>(
     loginWithBackendAPI,
     {
       status: 'idle',
-    },  
+    },
   );
 
   useEffect(() => {
     console.log('🔄 MSAL Button - Action State Changed:', state.status, state.message);
-    
+
     if (state.status === 'failed') {
       console.error('❌ Login failed:', state.message);
       toast({
@@ -56,7 +56,7 @@ export function MsalButton({
         type: 'success',
         description: 'Login successful!',
       });
-      
+
       // เช็คข้างนอก component - ตรวจสอบสถานะต่างๆ
       checkExternalAuthState();
     }
@@ -66,28 +66,28 @@ export function MsalButton({
   const checkExternalAuthState = async () => {
     try {
       console.log('🔍 Checking external authentication state...');
-      
+
       // 1. เช็ค session storage หรือ local storage
       const sessionData = sessionStorage.getItem('user-session');
       console.log('📦 Session data:', sessionData);
-      
+
       // 2. เช็ค cookies
       const cookies = document.cookie;
       console.log('🍪 Cookies:', cookies);
-      
+
       // 3. เช็ค API endpoint เพื่อยืนยันสถานะ
-      const response = await fetch('/api/auth/verify', {
+      const response = await fetch('/api-i/auth/verify', {
         method: 'GET',
         credentials: 'include', // ส่ง cookies
       });
-      
+
       if (response.ok) {
         const userData = await response.json();
         console.log('✅ External auth verified:', userData);
-        
+
         // 4. Redirect หรือ update UI ตามสถานะ
         // setTimeout(() => {
-          window.location.href = '/';
+        window.location.href = '/';
         // }, 1000);
       } else {
         console.log('❌ External auth verification failed');
@@ -104,29 +104,29 @@ export function MsalButton({
       // }, 1000);
     }
   };
-  
+
   const handleLogin = async () => {
     try {
       const res = await instance.loginPopup(loginRequest);
       const msEmail = res.account.username;
       console.log('🔐 Logged in user ms-email: ', msEmail);
-      
+
       // สร้าง FormData ใหม่พร้อมกับ email จาก MS account
       const formData = new FormData();
       formData.set('email', msEmail);
       formData.set('password', 'msal-authenticated'); // ใช้ placeholder password สำหรับ MSAL
-      
+
       // ตรวจสอบว่า FormData มี email หรือไม่
       console.log('📧 FormData email: ', formData.get('email'));
       console.log('📋 FormData keys: ', Array.from(formData.keys()));
       console.log('📄 FormData entries: ', Array.from(formData.entries()));
-      
+
       // ตรวจสอบว่า FormData มี email
       console.log('🔍 FormData check:');
       console.log('   - Has email: ', formData.has('email'));
       console.log('   - Email value: ', formData.get('email'));
       console.log('   - Has password: ', formData.has('password'));
-      
+
       // เรียกใช้ form action ภายใน transition
       // setEmail(formData.get('email') as string);
       startTransition(() => {
@@ -147,7 +147,7 @@ export function MsalButton({
   //   try {
   //     const account = accounts?.[0];
   //     const response = await instance.acquireTokenSilent({ ...loginRequest, account });
-  //     const res = await fetch('/api/echo', {
+  //     const res = await fetch('/api-i/echo', {
   //       method: 'POST',
   //       headers: {
   //         'Content-Type': 'application/json',

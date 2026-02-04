@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 
 async function clearSession() {
   try {
-    const response = await fetch('/api/clear-session', {
+    const response = await fetch('/api-i/clear-session', {
       method: 'POST',
     });
     if (response.ok) {

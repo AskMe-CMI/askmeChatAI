@@ -11,7 +11,7 @@ import { config } from 'dotenv';
 config();
 // const fetchOIDCConfig = async () => {
 //   try {
-//     const res = await fetch('/api/auth/envCheck', {
+//     const res = await fetch('/api-i/auth/envCheck', {
 //       method: 'GET',
 //       headers: { 'Content-Type': 'application/json' },
 //     });
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
     try {
       // call api/oidc-auth-url to get authorization URL
-      const response = await fetch('/api/auth/oidc-auth-url');
+      const response = await fetch('/api-i/auth/oidc-auth-url');
       const data = await response.json();
       const { url, state } = data;
       console.log('Received OIDC auth URL and state from server:', { url, state });

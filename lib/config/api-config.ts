@@ -49,10 +49,10 @@ export const API_ENDPOINTS = {
   // Mock authentication endpoints (for development)
   MOCK: {
     AUTH: {
-      LOGIN: `${API_CONFIG.INTERNAL_BASE_URL}/api/mock/auth/login`,
-      VERIFY: `${API_CONFIG.INTERNAL_BASE_URL}/api/mock/auth/verify`,
-      LOGOUT: `${API_CONFIG.INTERNAL_BASE_URL}/api/mock/auth/logout`,
-      REFRESH: `${API_CONFIG.INTERNAL_BASE_URL}/api/mock/auth/refresh`,
+      LOGIN: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/mock/auth/login`,
+      VERIFY: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/mock/auth/verify`,
+      LOGOUT: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/mock/auth/logout`,
+      REFRESH: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/mock/auth/refresh`,
     },
   },
 
@@ -66,19 +66,19 @@ export const API_ENDPOINTS = {
 
   // Internal chat API
   CHAT: {
-    SEND_MESSAGE: `${API_CONFIG.INTERNAL_BASE_URL}/api/chat`,
-    GET_HISTORY: `${API_CONFIG.INTERNAL_BASE_URL}/api/history`,
-    DELETE_CHAT: `${API_CONFIG.INTERNAL_BASE_URL}/api/chat/{id}`,
-    SUGGESTIONS: `${API_CONFIG.INTERNAL_BASE_URL}/api/suggestions`,
+    SEND_MESSAGE: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/chat`,
+    GET_HISTORY: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/history`,
+    DELETE_CHAT: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/chat/{id}`,
+    SUGGESTIONS: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/suggestions`,
     SESSIONS: `${API_CONFIG.BACKEND_BASE_URL}/chat/sessions`,
     MESSAGES: `${API_CONFIG.BACKEND_BASE_URL}/chat/messages`,
   },
 
   // File management
   FILES: {
-    UPLOAD: `${API_CONFIG.INTERNAL_BASE_URL}/api/files/upload`,
-    DOWNLOAD: `${API_CONFIG.INTERNAL_BASE_URL}/api/files/download`,
-    DELETE: `${API_CONFIG.INTERNAL_BASE_URL}/api/files/{id}`,
+    UPLOAD: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/files/upload`,
+    DOWNLOAD: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/files/download`,
+    DELETE: `${API_CONFIG.INTERNAL_BASE_URL}/api-i/files/{id}`,
     INFO: `${API_CONFIG.BACKEND_BASE_URL}/files`,
   },
 

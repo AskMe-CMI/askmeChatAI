@@ -48,13 +48,13 @@ function createDifyModels() {
 
 export const myProvider = isTestEnvironment
   ? customProvider({
-      languageModels: {
-        'chat-model': chatModel,
-        'chat-model-reasoning': reasoningModel,
-        'title-model': titleModel,
-        'artifact-model': artifactModel,
-      },
-    })
+    languageModels: {
+      'chat-model': chatModel,
+      'chat-model-reasoning': reasoningModel,
+      'title-model': titleModel,
+      'artifact-model': artifactModel,
+    },
+  })
   : customProvider({
-      languageModels: createDifyModels(),
-    });
+    languageModels: createDifyModels(),
+  });

@@ -6,11 +6,11 @@ import { getMessageByErrorCode } from '@/lib/errors';
 const documentsCreatedByAda: Array<Document> = [];
 
 test.describe
-  .serial('/api/document', () => {
+  .serial('/api-i/document', () => {
     test('Ada cannot retrieve a document without specifying an id', async ({
       adaContext,
     }) => {
-      const response = await adaContext.request.get('/api/document');
+      const response = await adaContext.request.get('/api-i/document');
       expect(response.status()).toBe(400);
 
       const { code, message } = await response.json();
@@ -24,7 +24,7 @@ test.describe
       const documentId = generateUUID();
 
       const response = await adaContext.request.get(
-        `/api/document?id=${documentId}`,
+        `/api-i/document?id=${documentId}`,
       );
       expect(response.status()).toBe(404);
 
@@ -43,7 +43,7 @@ test.describe
       };
 
       const response = await adaContext.request.post(
-        `/api/document?id=${documentId}`,
+        `/api-i/document?id=${documentId}`,
         {
           data: draftDocument,
         },
@@ -60,15 +60,15 @@ test.describe
       const [document] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${document.id}`,
+        `/api-i/document?id=${document.id}`,
       );
       expect(response.status()).toBe(200);
 
       const retrievedDocuments = await response.json();
       expect(retrievedDocuments).toHaveLength(1);
 
-  const [retrievedDocument] = retrievedDocuments;
-  expect(retrievedDocument).toMatchObject(document as unknown as Record<string, unknown>);
+      const [retrievedDocument] = retrievedDocuments;
+      expect(retrievedDocument).toMatchObject(document as unknown as Record<string, unknown>);
     });
 
     test('Ada can save a new version of the document', async ({
@@ -83,7 +83,7 @@ test.describe
       };
 
       const response = await adaContext.request.post(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
         {
           data: draftDocument,
         },
@@ -102,7 +102,7 @@ test.describe
       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
       );
       expect(response.status()).toBe(200);
 
@@ -111,14 +111,14 @@ test.describe
 
       const [firstRetrievedDocument, secondRetrievedDocument] =
         retrievedDocuments;
-  expect(firstRetrievedDocument).toMatchObject(firstDocument as unknown as Record<string, unknown>);
-  expect(secondRetrievedDocument).toMatchObject(secondDocument as unknown as Record<string, unknown>);
+      expect(firstRetrievedDocument).toMatchObject(firstDocument as unknown as Record<string, unknown>);
+      expect(secondRetrievedDocument).toMatchObject(secondDocument as unknown as Record<string, unknown>);
     });
 
     test('Ada cannot delete a document without specifying an id', async ({
       adaContext,
     }) => {
-      const response = await adaContext.request.delete(`/api/document`);
+      const response = await adaContext.request.delete(`/api-i/document`);
       expect(response.status()).toBe(400);
 
       const { code, message } = await response.json();
@@ -132,7 +132,7 @@ test.describe
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
       );
       expect(response.status()).toBe(400);
 
@@ -147,15 +147,15 @@ test.describe
       const [firstDocument, secondDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.delete(
-        `/api/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`,
+        `/api-i/document?id=${firstDocument.id}&timestamp=${firstDocument.createdAt}`,
       );
       expect(response.status()).toBe(200);
 
       const deletedDocuments = await response.json();
       expect(deletedDocuments).toHaveLength(1);
 
-  const [deletedDocument] = deletedDocuments;
-  expect(deletedDocument).toMatchObject(secondDocument as unknown as Record<string, unknown>);
+      const [deletedDocument] = deletedDocuments;
+      expect(deletedDocument).toMatchObject(secondDocument as unknown as Record<string, unknown>);
     });
 
     test('Ada can retrieve documents without deleted versions', async ({
@@ -164,15 +164,15 @@ test.describe
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
       );
       expect(response.status()).toBe(200);
 
       const retrievedDocuments = await response.json();
       expect(retrievedDocuments).toHaveLength(1);
 
-  const [firstRetrievedDocument] = retrievedDocuments;
-  expect(firstRetrievedDocument).toMatchObject(firstDocument as unknown as Record<string, unknown>);
+      const [firstRetrievedDocument] = retrievedDocuments;
+      expect(firstRetrievedDocument).toMatchObject(firstDocument as unknown as Record<string, unknown>);
     });
 
     test("Babbage cannot update Ada's document", async ({ babbageContext }) => {
@@ -185,7 +185,7 @@ test.describe
       };
 
       const response = await babbageContext.request.post(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
         {
           data: draftDocument,
         },
@@ -201,7 +201,7 @@ test.describe
       const [firstDocument] = documentsCreatedByAda;
 
       const response = await adaContext.request.get(
-        `/api/document?id=${firstDocument.id}`,
+        `/api-i/document?id=${firstDocument.id}`,
       );
       expect(response.status()).toBe(200);
 

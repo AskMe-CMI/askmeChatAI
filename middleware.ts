@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
   // If there is no session, redirect to the login page
   if (!session) {
     // But don't redirect for API routes, let them handle auth themselves if needed
-    if (pathname.startsWith('/api/')) {
+    if (pathname.startsWith('/api-i/')) {
       // console.log('🔓 Allowing API route without session:', pathname);
       return NextResponse.next();
     }

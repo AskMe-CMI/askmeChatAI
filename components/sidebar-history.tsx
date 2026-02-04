@@ -88,11 +88,11 @@ export function getChatHistoryPaginationKey(
   }
 
   // For first page, start with offset 0
-  if (pageIndex === 0) return `/api/history?limit=${PAGE_SIZE}&offset=0`;
+  if (pageIndex === 0) return `/api-i/history?limit=${PAGE_SIZE}&offset=0`;
 
   // For subsequent pages, use offset-based pagination
   const offset = pageIndex * PAGE_SIZE;
-  return `/api/history?limit=${PAGE_SIZE}&offset=${offset}`;
+  return `/api-i/history?limit=${PAGE_SIZE}&offset=${offset}`;
 }
 
 export function SidebarHistory({
@@ -134,7 +134,7 @@ export function SidebarHistory({
     console.log('✅ User confirmed deletion for chat:', deleteId);
     console.log('🚀 Starting delete process...');
 
-    const deletePromise = fetch(`/api/chat?id=${deleteId}`, {
+    const deletePromise = fetch(`/api-i/chat?id=${deleteId}`, {
       method: 'DELETE',
     });
 

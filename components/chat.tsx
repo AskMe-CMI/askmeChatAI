@@ -155,7 +155,7 @@ export function Chat({
     experimental_throttle: 100,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
-      api: '/api/chat',
+      api: '/api-i/chat',
       fetch: fetchWithErrorHandlers,
       prepareSendMessagesRequest({
         messages,
@@ -315,7 +315,7 @@ export function Chat({
   // }, [id]);
 
   const { data: votes } = useSWR<Array<Vote>>(
-    messages.length >= 2 ? `/api/vote?chatId=${id}` : null,
+    messages.length >= 2 ? `/api-i/vote?chatId=${id}` : null,
     fetcher,
   );
 

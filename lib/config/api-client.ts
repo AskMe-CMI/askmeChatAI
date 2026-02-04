@@ -20,6 +20,7 @@ export interface ApiResponse<T = any> {
   message?: string;
   error?: string;
   status: number;
+  url?: string;
 }
 
 export interface RequestOptions {
@@ -113,6 +114,7 @@ export class ApiClient {
           message: response.ok
             ? 'Success'
             : responseData?.message || 'Request failed',
+          url: url,
         };
       } catch (error) {
         lastError = error as Error;
@@ -141,6 +143,7 @@ export class ApiClient {
       status: 0,
       error: errorMessage,
       message: errorMessage,
+      url: url,
     };
   }
 

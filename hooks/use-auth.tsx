@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const loadAuthState = async () => {
       try {
         // Rely on cookie-based session. Call verify endpoint which reads the cookie server-side.
-        const response = await fetch('/api/auth/verify', { method: 'GET' });
+        const response = await fetch('/api-i/auth/verify', { method: 'GET' });
 
         if (response.ok) {
           const payload = await response.json();
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api-i/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -80,12 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-  // Clear client state
-  setToken(null);
-  setUser(null);
+    // Clear client state
+    setToken(null);
+    setUser(null);
 
-  // Call logout API (server will clear cookie)
-  fetch('/api/auth/logout', { method: 'POST' }).catch(console.error);
+    // Call logout API (server will clear cookie)
+    fetch('/api-i/auth/logout', { method: 'POST' }).catch(console.error);
   };
 
   return (

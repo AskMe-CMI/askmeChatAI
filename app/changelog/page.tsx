@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 
-const CHANGELOG_API = "/api/changelog"; // สร้าง API endpoint นี้ใน backend
+const CHANGELOG_API = "/api-i/changelog"; // สร้าง API endpoint นี้ใน backend
 
 export default function ChangeLogPage() {
   const [content, setContent] = useState("");
@@ -33,7 +33,7 @@ export default function ChangeLogPage() {
     setLoading(false);
   };
 
-  if (loading) 
+  if (loading)
     return (
       <div style={{
         display: "flex",
@@ -45,7 +45,7 @@ export default function ChangeLogPage() {
         color: "#888"
       }}>
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ marginBottom: 16 }}>
-          <circle cx="12" cy="12" r="10" stroke="#888" strokeWidth="4" opacity="0.2"/>
+          <circle cx="12" cy="12" r="10" stroke="#888" strokeWidth="4" opacity="0.2" />
           <path d="M12 2a10 10 0 1 1-7.07 2.93" stroke="#888" strokeWidth="4" strokeLinecap="round">
             <animateTransform
               attributeName="transform"

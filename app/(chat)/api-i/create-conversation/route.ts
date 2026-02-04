@@ -17,8 +17,8 @@ export async function POST(request: NextRequest) {
   return Response.json(
     {
       success: false,
-      error: 'This endpoint is deprecated. Use /api/chat instead.',
-      redirect: '/api/chat',
+      error: 'This endpoint is deprecated. Use /api-i/chat instead.',
+      redirect: '/api-i/chat',
     },
     { status: 410 },
   ); // 410 Gone

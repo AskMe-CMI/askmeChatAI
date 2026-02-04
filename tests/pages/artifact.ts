@@ -1,7 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 
 export class ArtifactPage {
-  constructor(private page: Page) {}
+  constructor(private page: Page) { }
 
   public get artifact() {
     return this.page.getByTestId('artifact');
@@ -21,7 +21,7 @@ export class ArtifactPage {
 
   async isGenerationComplete() {
     const response = await this.page.waitForResponse((response) =>
-      response.url().includes('/api/chat'),
+      response.url().includes('/api-i/chat'),
     );
 
     await response.finished();
@@ -50,8 +50,8 @@ export class ArtifactPage {
       .then(async (visible) =>
         visible
           ? await lastMessageElement
-              .getByTestId('message-reasoning')
-              .innerText()
+            .getByTestId('message-reasoning')
+            .innerText()
           : null,
       )
       .catch(() => null);
