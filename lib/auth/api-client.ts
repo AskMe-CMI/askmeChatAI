@@ -39,9 +39,9 @@ export async function loginWithBackend(
   credentials: LoginRequest,
 ): Promise<LoginResponse> {
   try {
-    console.log('Login URL:', `${BACKEND_API_URL}/v1/login`);
+    console.log('Login URL:', `${BACKEND_API_URL}/api/v1/login`);
 
-    const response = await fetch(`${BACKEND_API_URL}/v1/login`, {
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -105,8 +105,8 @@ export async function verifyTokenWithBackend(
   token: string,
 ): Promise<UserProfile | null> {
   try {
-    // Use /v1/users/me endpoint per Swagger spec
-    const response = await fetch(`${BACKEND_API_URL}/v1/users/me`, {
+    // Use /api/v1/users/me endpoint per Swagger spec
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/users/me`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
