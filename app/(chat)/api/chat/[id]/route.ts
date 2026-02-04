@@ -107,7 +107,7 @@ export async function GET(
     console.log('Chat API - Fetching chat from Backend:', { id, userEmail });
 
     // Call Backend API to get session with messages
-    const backendUrl = `${BACKEND_API_URL}/api/chat-history/sessions/${id}`;
+    const backendUrl = `${BACKEND_API_URL}/chat-history/sessions/${id}`;
 
     console.log('Chat API - Calling Backend URL:', backendUrl);
 

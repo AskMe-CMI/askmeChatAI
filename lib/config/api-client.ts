@@ -41,10 +41,10 @@ export class ApiClient {
   private maxRetries: number;
 
   constructor(
-    baseUrl: string = API_CONFIG.INTERNAL_BASE_URL,
+    baseUrl: string = API_CONFIG.INTERNAL_BASE_URL || '',
     defaultHeaders: Record<string, string> = API_HEADERS.DEFAULT,
-    timeout: number = API_CONFIG.REQUEST_TIMEOUT,
-    maxRetries: number = API_CONFIG.MAX_RETRIES,
+    timeout: number = Number(API_CONFIG.REQUEST_TIMEOUT) || 30000,
+    maxRetries: number = Number(API_CONFIG.MAX_RETRIES) || 3,
   ) {
     this.baseUrl = baseUrl;
     this.defaultHeaders = defaultHeaders;
@@ -123,7 +123,7 @@ export class ApiClient {
         }
 
         // Wait before retry
-        await this.delay(API_CONFIG.RETRY_DELAY * attempt);
+        await this.delay(Number(API_CONFIG.RETRY_DELAY) * attempt);
 
         console.warn(
           `API request failed (attempt ${attempt}/${retries + 1}):`,

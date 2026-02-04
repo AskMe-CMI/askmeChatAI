@@ -142,8 +142,8 @@ export async function registerWithBackendAPI(
     };
 
     // Call register API (Server-side fetch)
-    console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/api/v1/register`);
-    const response = await fetch(`${BACKEND_API_URL}/api/v1/register`, {
+    console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/v1/register`);
+    const response = await fetch(`${BACKEND_API_URL}/v1/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

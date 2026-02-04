@@ -76,13 +76,13 @@ export async function sendChatCompletion(
     };
 
     console.log('🌐 Backend Chat API Request:', {
-        url: `${BACKEND_API_URL}/api/v1/chat/completions`,
+        url: `${BACKEND_API_URL}/v1/chat/completions`,
         model,
         messageCount: messages.length,
         stream,
     });
 
-    const response = await fetch(`${BACKEND_API_URL}/api/v1/chat/completions`, {
+    const response = await fetch(`${BACKEND_API_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
@@ -158,7 +158,7 @@ export async function createBackendSession(title: string, model: string): Promis
     console.log('📝 Creating Backend session:', { title, model });
 
     try {
-        const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions`, {
+        const response = await fetch(`${BACKEND_API_URL}/chat-history/sessions`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -207,7 +207,7 @@ export async function addMessageToSession(
         const body: any = { role, content };
         if (model) body.model = model;
 
-        const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}/messages`, {
+        const response = await fetch(`${BACKEND_API_URL}/chat-history/sessions/${sessionId}/messages`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -300,7 +300,7 @@ export async function sendMessageToSession(
             body.attachments = attachments;
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}/messages`, {
+        const response = await fetch(`${BACKEND_API_URL}/chat-history/sessions/${sessionId}/messages`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

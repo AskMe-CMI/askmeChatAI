@@ -69,7 +69,7 @@ export async function createSession(
     }
 
     try {
-        const response = await fetch(`${BACKEND_API_URL}/api/chat-history/sessions`, {
+        const response = await fetch(`${BACKEND_API_URL}/chat-history/sessions`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ export async function getSession(sessionId: string): Promise<SessionDetail | nul
 
     try {
         const response = await fetch(
-            `${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}`,
+            `${BACKEND_API_URL}/chat-history/sessions/${sessionId}`,
             {
                 method: 'GET',
                 headers: {
@@ -148,7 +148,7 @@ export async function sendMessage(
 
     try {
         const response = await fetch(
-            `${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}/messages`,
+            `${BACKEND_API_URL}/chat-history/sessions/${sessionId}/messages`,
             {
                 method: 'POST',
                 headers: {
@@ -188,7 +188,7 @@ export async function deleteSession(sessionId: string): Promise<boolean> {
 
     try {
         const response = await fetch(
-            `${BACKEND_API_URL}/api/chat-history/sessions/${sessionId}`,
+            `${BACKEND_API_URL}/chat-history/sessions/${sessionId}`,
             {
                 method: 'DELETE',
                 headers: {

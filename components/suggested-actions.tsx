@@ -20,8 +20,8 @@ function PureSuggestedActions({
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'Explain the concept of Object-Oriented Programming.',
-      label: 'Programming Basics',
+      title: 'Explain the concept of',
+      label: 'Object-Oriented Programming',
       action: 'Explain OOP',
     },
     {

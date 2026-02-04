@@ -857,7 +857,7 @@ export async function DELETE(request: Request) {
 
     // Delete from Backend API
     const backendDeleteResponse = await fetch(
-      `${BACKEND_API_URL}/api/chat-history/sessions/${id}`,
+      `${BACKEND_API_URL}/chat-history/sessions/${id}`,
       {
         method: 'DELETE',
         headers: {

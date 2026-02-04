@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
   try {
     // Build Backend API URL
     const backendUrl = new URL(
-      '/api/chat-history/sessions',
+      '/chat-history/sessions',
       BACKEND_API_URL,
     );
     // Request more items to handle offset-based pagination

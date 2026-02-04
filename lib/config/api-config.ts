@@ -9,22 +9,22 @@
 export const API_CONFIG = {
   // Backend API Base URL
   BACKEND_BASE_URL:
-    process.env.NEXT_PUBLIC_BACKEND_API_URL || 'https://ai.askme.co.th/api',
+    process.env.NEXT_PUBLIC_BACKEND_API_URL,
 
   // Dify API Configuration
-  DIFY_BASE_URL: process.env.DIFY_BASE_URL || 'https://api.dify.ai/v1',
-  DIFY_API_KEY: process.env.DIFY_API_KEY || '',
+  DIFY_BASE_URL: process.env.DIFY_BASE_URL,
+  DIFY_API_KEY: process.env.DIFY_API_KEY,
 
   // Internal API Base URL
   INTERNAL_BASE_URL:
-    process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+    process.env.NEXT_PUBLIC_BASE_URL,
 
   // Timeout settings
-  REQUEST_TIMEOUT: 30000, // 30 seconds
+  REQUEST_TIMEOUT: process.env.REQUEST_TIMEOUT,
 
   // Retry settings
-  MAX_RETRIES: 3,
-  RETRY_DELAY: 1000, // 1 second
+  MAX_RETRIES: process.env.MAX_RETRIES,
+  RETRY_DELAY: process.env.RETRY_DELAY,
 } as const;
 
 // ===============================

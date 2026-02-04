@@ -15,7 +15,7 @@ export async function GET() {
             );
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/api/v1/models`, {
+        const response = await fetch(`${BACKEND_API_URL}/v1/models`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token.value}`,
