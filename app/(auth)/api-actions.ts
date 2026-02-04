@@ -97,52 +97,52 @@ export interface RegisterActionState {
 /**
  * Register action that calls backend API
  */
+// Define Zod schema for registration
+const registerSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  fullName: z.string().min(1, "Full name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+/**
+ * Register action that calls backend API
+ */
 export async function registerWithBackendAPI(
   prevState: RegisterActionState,
   formData: FormData,
 ): Promise<RegisterActionState> {
   try {
-    const username = formData.get('username') as string;
-    const fullName = formData.get('fullName') as string;
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
+    const rawData = {
+      username: formData.get('username') as string,
+      fullName: formData.get('fullName') as string,
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
+      confirmPassword: formData.get('confirmPassword') as string,
+    };
 
-    // Validate inputs
-    if (!username || !fullName || !email || !password || !confirmPassword) {
-      return {
-        status: 'invalid_data',
-        message: 'Please fill in all fields',
-      };
-    }
+    console.log('[Register] Attempting registration for:', rawData.email);
 
-    if (password !== confirmPassword) {
-      return {
-        status: 'invalid_data',
-        message: 'Passwords do not match',
-      };
-    }
+    // returns { data: ... } or throws ZodError
+    const validatedData = registerSchema.parse(rawData);
 
-    if (password.length < 6) {
-      return {
-        status: 'invalid_data',
-        message: 'Password must be at least 6 characters',
-      };
-    }
-
-    console.log('Registering user:', email);
+    console.log('[Register] Validation successful for:', validatedData.email);
 
     // Prepare registration data matching Backend API spec
     const registrationData = {
-      email,
-      username,
-      password,
-      full_name: fullName,
+      email: validatedData.email,
+      username: validatedData.username,
+      password: validatedData.password,
+      full_name: validatedData.fullName,
       consent: true,
     };
-    console.log('Registration request body:', JSON.stringify(registrationData));
 
     // Call register API (Server-side fetch)
+    console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/api/v1/register`);
     const response = await fetch(`${BACKEND_API_URL}/api/v1/register`, {
       method: 'POST',
       headers: {
@@ -151,13 +151,15 @@ export async function registerWithBackendAPI(
       body: JSON.stringify(registrationData),
     });
 
+    console.log('[Register] Backend response status:', response.status);
+
     // Always try to parse JSON
     let data;
     try {
       data = await response.json();
-      console.log('Registration response:', data);
+      console.log('[Register] Backend response data:', JSON.stringify(data));
     } catch (e) {
-      console.error('Failed to parse registration response:', e);
+      console.error('[Register] Failed to parse registration response:', e);
       if (response.ok) {
         // If OK but no JSON, assume success (e.g. 201 Created empty body)
         return {
@@ -196,12 +198,24 @@ export async function registerWithBackendAPI(
       }
     }
 
+    console.log('[Register] Failed with message:', errorMessage);
+
     return {
       status: 'failed',
       message: errorMessage,
     };
   } catch (error) {
-    console.error('Registration error:', error);
+    if (error instanceof z.ZodError) {
+      const fieldErrors = error.flatten().fieldErrors;
+      const firstError = Object.values(fieldErrors)[0]?.[0] || 'Validation failed';
+      console.log('[Register] Validation error:', firstError);
+      return {
+        status: 'invalid_data',
+        message: firstError,
+      };
+    }
+
+    console.error('[Register] Unexpected error:', error);
     return {
       status: 'failed',
       message: 'An error occurred during registration',

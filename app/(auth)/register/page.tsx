@@ -12,20 +12,10 @@ import { registerWithBackendAPI, type RegisterActionState } from '../api-actions
 // Local implementation removed in favor of Server Action to avoid CORS issues
 
 import { PDPAConsentModal } from '@/components/pdpa-consent-modal';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 export default function RegisterPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
-    const [showSuccessModal, setShowSuccessModal] = useState(false);
 
     const [state, formAction] = useActionState<RegisterActionState, FormData>(
         registerWithBackendAPI,
@@ -46,13 +36,13 @@ export default function RegisterPage() {
                 description: state.message || 'Please check your input!',
             });
         } else if (state.status === 'success') {
-            setShowSuccessModal(true);
             toast({
                 type: 'success',
                 description: state.message || 'Registration successful!',
             });
+            router.push('/register/success');
         }
-    }, [state.status, state.message]);
+    }, [state.status, state.message, router]);
 
     const handleSubmit = (formData: FormData) => {
         setEmail(formData.get('email') as string);
@@ -62,21 +52,6 @@ export default function RegisterPage() {
     return (
         <>
             <PDPAConsentModal />
-            <AlertDialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>ลงทะเบียนสำเร็จ</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            ระบบได้ส่งรายละเอียดการใช้งานและวันหมดอายุไปทางอีเมลแล้ว
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => window.location.reload()}>
-                            ตกลง
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
             <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
                 <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-8">
                     <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
