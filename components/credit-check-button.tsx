@@ -115,7 +115,7 @@ export function CreditCheckButton() {
             {isOpen && (
                 <div
                     ref={panelRef}
-                    className="absolute right-0 w-80 bg-white/80 backdrop-blur-lg dark:bg-zinc-900/80 border rounded-lg shadow-xl p-4 animate-in fade-in duration-200 slide-in-from-top-2 md:slide-in-from-bottom-2 top-14 md:top-auto md:bottom-16"
+                    className="fixed left-3 right-3 w-auto md:w-80 md:absolute md:left-auto md:right-0 bg-white/80 backdrop-blur-lg dark:bg-zinc-900/80 border rounded-lg shadow-xl p-4 animate-in fade-in duration-200 slide-in-from-top-2 md:slide-in-from-bottom-2 top-14 md:top-auto md:bottom-16 z-50 break-words"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
