@@ -490,6 +490,7 @@ export function Chat({
             <AlertDialogAction
               onClick={() => {
                 setShowCreditLimitModal(false);
+                window.location.reload();
               }}
             >
               ตกลง
