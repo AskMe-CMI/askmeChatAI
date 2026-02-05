@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatDisplayDate } from '@/lib/utils';
 
 export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent: boolean) => void }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -209,7 +210,7 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
                             </div>
 
                             <p className="text-xs text-muted-foreground text-center font-semibold">
-                                วันที่มีผลบังคับใช้: {new Date().toLocaleDateString('th-TH')} | เวอร์ชั่น: 1.0b (สำหรับการสาธิต)
+                                วันที่มีผลบังคับใช้: {formatDisplayDate(new Date())} | เวอร์ชั่น: 1.0b (สำหรับการสาธิต)
                             </p>
 
                             <p className="text-xs text-muted-foreground text-center">

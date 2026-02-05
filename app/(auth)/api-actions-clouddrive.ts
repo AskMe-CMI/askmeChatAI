@@ -102,7 +102,11 @@ const registerSchema = z.object({
   username: z.string().min(1, "Username is required"),
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  password: z.string()
+    .min(10, "Password must be at least 10 characters")
+    .refine((val) => !/^\d+$/.test(val), {
+      message: "Password cannot be all numbers",
+    }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
@@ -137,13 +141,13 @@ export async function registerWithBackendAPI(
       email: validatedData.email,
       username: validatedData.username,
       password: validatedData.password,
-      full_name: validatedData.fullName,
-      consent: true,
+      // full_name: validatedData.fullName,
+      // consent: true,
     };
 
     // Call register API (Server-side fetch)
-    console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/api/v1/register`);
-    const response = await fetch(`${BACKEND_API_URL}/api/v1/register`, {
+    console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/api/v1/register-nextcloud`);
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/register-nextcloud`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -298,10 +302,7 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
         is_active: true,
         is_blocked: false,
         limit_reached: rawData.limit_reached || false,
-        // Check if limit_expiry_date has passed (compare with current time in UTC+7)
-        limit_expired: rawData.limit_expiry_date
-          ? new Date(rawData.limit_expiry_date) < new Date()
-          : false,
+        limit_expired: false,
       },
     };
 

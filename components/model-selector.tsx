@@ -47,7 +47,7 @@ function convertToCharModel(backendModel: BackendModel): ChatModel {
   return {
     id: backendModel.id,
     name: formatModelName(backendModel.id),
-    description: `Powered by ${backendModel.owned_by}`,
+    description: `${backendModel.owned_by}`, //remove Powered by
   };
 }
 

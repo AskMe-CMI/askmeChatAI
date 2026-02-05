@@ -18,53 +18,9 @@ import {
 import { memo } from 'react';
 import { useChatVisibility } from '@/hooks/use-chat-visibility';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { formatDisplayDate } from '@/lib/utils';
 
-// Format exact date and time (e.g., "29 ม.ค. 2569 17:46")
-function formatDateTime(dateInput: Date | string | null | undefined): string {
-  if (!dateInput) return '';
 
-  // Convert string to Date if needed
-  let date: Date;
-  if (typeof dateInput === 'string') {
-    // If string doesn't end with Z and doesn't have timezone offset, assume UTC and append Z
-    // This handles Backend sending "2026-01-29T03:37:49" (UTC) without Z
-    const isISOFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(dateInput);
-    const hasTimezone = /Z|[+-]\d{2}:?\d{2}$/.test(dateInput);
-
-    if (isISOFormat && !hasTimezone) {
-      date = new Date(dateInput + 'Z');
-    } else {
-      date = new Date(dateInput);
-    }
-    // console.log('🕒 Date Debug:', { input: dateInput, parsed: date.toString(), iso: date.toISOString() });
-  } else {
-    date = dateInput;
-  }
-
-  // Validate the date
-  if (isNaN(date.getTime())) return '';
-
-  try {
-    return new Intl.DateTimeFormat('th-TH-u-ca-buddhist', {
-      calendar: 'buddhist',
-      numberingSystem: 'latn', // Use Arabic numerals (0-9) instead of Thai numerals
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone: 'Asia/Bangkok'
-    }).format(date);
-  } catch (error) {
-    // Fallback: manually add 543 years for broken environments
-    const year = date.getFullYear() + 543;
-    const month = date.toLocaleDateString('th-TH', { month: 'short' });
-    const day = date.getDate();
-    const time = date.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false });
-    return `${day} ${month} ${year} ${time}`;
-  }
-}
 
 // Get short model name (e.g., "gpt-4.1-mini" -> "4.1-mini")
 function getShortModelName(model: string | undefined): string {
@@ -96,7 +52,7 @@ const PureChatItem = ({
   const modelShort = getShortModelName(chat.model);
   const msgCount = chat.messageCount ?? 0;
   // Use updated_at as requested, formatted as Date Time
-  const lastActive = formatDateTime(chat.updatedAt);
+  const lastActive = formatDisplayDate(chat.updatedAt, true);
 
   return (
     <SidebarMenuItem>

@@ -1,6 +1,10 @@
 'use client';
 
 import { ModelSelector } from '@/components/model-selector';
+import { SidebarToggle } from '@/components/sidebar-toggle';
+import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
+import { PanelLeft } from 'lucide-react';
 
 import { memo } from 'react';
 // import { type VisibilityType, VisibilitySelector } from './visibility-selector';
@@ -23,16 +27,27 @@ function PureChatHeader({
   session: UserPayload;
   onModelChange?: (modelId: string) => void;
 }) {
+  const { toggleSidebar } = useSidebar();
+
   return (
     <header className="flex sticky top-0 py-1.5 items-center px-2 md:px-2 gap-2">
 
 
       {!isReadonly && (
-        <ModelSelector
-          selectedModelId={selectedModelId}
-          onModelChange={onModelChange}
-          className="order-1 md:order-2"
-        />
+        <>
+          <Button
+            variant="ghost"
+            className="md:hidden h-8 w-8 px-0"
+            onClick={toggleSidebar}
+          >
+            <PanelLeft className="h-4 w-4" />
+          </Button>
+          <ModelSelector
+            selectedModelId={selectedModelId}
+            onModelChange={onModelChange}
+            className="order-1 md:order-2"
+          />
+        </>
       )}
 
       {/* {!isReadonly && (

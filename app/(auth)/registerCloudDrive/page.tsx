@@ -7,7 +7,7 @@ import Form from 'next/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SubmitButton } from '@/components/submit-button';
-import { registerWithBackendAPI, type RegisterActionState } from '../api-actions';
+import { registerWithBackendAPI, type RegisterActionState } from '../api-actions-clouddrive';
 
 // Local implementation removed in favor of Server Action to avoid CORS issues
 
@@ -83,6 +83,24 @@ export default function RegisterAltPage() {
 
                         <div className="flex flex-col gap-2">
                             <Label
+                                htmlFor="username"
+                                className="text-zinc-600 font-normal dark:text-zinc-400"
+                            >
+                                Username
+                            </Label>
+                            <Input
+                                id="username"
+                                name="username"
+                                className="bg-muted text-md md:text-sm"
+                                type="text"
+                                placeholder="johndoe"
+                                autoComplete="username"
+                                required
+                            />
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <Label
                                 htmlFor="email"
                                 className="text-zinc-600 font-normal dark:text-zinc-400"
                             >
@@ -114,7 +132,7 @@ export default function RegisterAltPage() {
                                 name="password"
                                 className="bg-muted text-md md:text-sm"
                                 type="password"
-                                placeholder="Minimum 6 characters"
+                                placeholder="Minimum 10 characters, not all numbers"
                                 autoComplete="new-password"
                                 required
                             />

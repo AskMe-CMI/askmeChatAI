@@ -12,6 +12,7 @@ import { LoaderIcon } from '@/components/icons';
 import { getUsageStatsAction, type UsageStatsResponse } from '@/app/(auth)/api-actions';
 import { Gem } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDisplayDate } from '@/lib/utils';
 
 export function CreditCheckButton() {
     const [isOpen, setIsOpen] = useState(false);
@@ -85,6 +86,9 @@ export function CreditCheckButton() {
 
     const getStatusColor = () => {
         if (!stats) return 'text-muted-foreground';
+        // If expired, always show red
+        if (stats.status.limit_expired) return 'text-red-500';
+        
         // Use raw percentage for color logic, but clamp for display
         const actualRemaining = 100 - stats.tokens.percentage_used;
         if (actualRemaining < 20) return 'text-red-500';
@@ -94,6 +98,9 @@ export function CreditCheckButton() {
 
     const getProgressColor = () => {
         if (!stats) return 'bg-muted';
+        // If expired, always show red
+        if (stats.status.limit_expired) return 'bg-red-500';
+
         const actualRemaining = 100 - stats.tokens.percentage_used;
         if (actualRemaining < 20) return 'bg-red-500';
         if (actualRemaining <= 50) return 'bg-yellow-500';
@@ -103,12 +110,12 @@ export function CreditCheckButton() {
     const formatNumber = (num: number) => num.toLocaleString();
 
     return (
-        <div className="fixed bottom-4 right-4 z-50">
+        <div className="fixed z-50 top-2 right-3 md:right-4 md:top-auto md:bottom-4">
             {/* Panel - displays above button */}
             {isOpen && (
                 <div
                     ref={panelRef}
-                    className="absolute bottom-16 right-0 w-80 bg-white/80 backdrop-blur-lg dark:bg-zinc-900/80 border rounded-lg shadow-xl p-4 animate-in fade-in slide-in-from-bottom-2 duration-200"
+                    className="absolute right-0 w-80 bg-white/80 backdrop-blur-lg dark:bg-zinc-900/80 border rounded-lg shadow-xl p-4 animate-in fade-in duration-200 slide-in-from-top-2 md:slide-in-from-bottom-2 top-14 md:top-auto md:bottom-16"
                 >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">
@@ -167,6 +174,15 @@ export function CreditCheckButton() {
                                     <span className="text-muted-foreground">Total Quota</span>
                                     <span className="text-foreground">{formatNumber(stats.tokens.limit)}</span>
                                 </div>
+                                {stats.tokens.expiry_date && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Expiry Date</span>
+                                        <span className={stats.status.limit_expired ? 'text-red-500' : 'text-primary'}>
+                                            {formatDisplayDate(stats.tokens.expiry_date, true)}
+                                            {stats.status.limit_expired && ' (Expired)'}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </>
                     ) : (
@@ -184,7 +200,7 @@ export function CreditCheckButton() {
                 size="icon"
                 onClick={handleClick}
                 disabled={isLoading && !isOpen}
-                className="h-12 w-12 rounded-full shadow-lg bg-background hover:bg-muted border-2"
+                className="h-10 w-10 shadow-lg bg-background border-0"
                 title="Check Credit"
             >
                 {isLoading && !stats ? (

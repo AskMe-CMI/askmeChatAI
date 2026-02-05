@@ -114,3 +114,23 @@ export function getTextFromMessage(message: ChatMessage): string {
     .map((part) => part.text ?? '')
     .join('');
 }
+
+/**
+ * Format date for display (e.g., "5 Feb 2026")
+ * @param date - Date object or ISO string
+ * @param includeTime - Include time in format (e.g., "5 Feb 2026 14:30")
+ */
+export function formatDisplayDate(date: Date | string, includeTime = false): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const day = d.getDate();
+  const month = d.toLocaleDateString('en-US', { month: 'short' });
+  const year = d.getFullYear();
+
+  if (includeTime) {
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month} ${year} ${hours}:${minutes}`;
+  }
+
+  return `${day} ${month} ${year}`;
+}

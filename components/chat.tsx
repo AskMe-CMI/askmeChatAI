@@ -76,6 +76,8 @@ export function Chat({
   const [creditLimitMessage, setCreditLimitMessage] = useState('');
   // Track if credit is exhausted (for disabling input on page load)
   const [isCreditExhausted, setIsCreditExhausted] = useState(false);
+  // Track if account is expired
+  const [isExpired, setIsExpired] = useState(false);
 
   // Handle model change mid-chat
   const handleModelChange = (newModelId: string) => {
@@ -91,11 +93,32 @@ export function Chat({
         const result = await getUsageStatsAction();
         if (result.success && result.data) {
           const remainingPercent = 100 - (result.data.tokens.percentage_used || 0);
-          console.log('💰 Initial credit check:', { remainingPercent });
-          if (remainingPercent <= 0) {
+          const limitExpired = result.data.status.limit_expired || false;
+          console.log('💰 Initial credit check:', { remainingPercent, limitExpired, expiry_date: result.data.tokens.expiry_date });
+          
+          // Check if we already showed the modal in this session
+          // Use global key for expired accounts, per-chat key for credit exhausted
+          const expiredModalKey = 'credit_expired_modal_shown';
+          const creditModalKey = `credit_modal_shown_${id}`;
+          
+          // Check if expired first
+          if (limitExpired) {
+            setIsExpired(true);
             setIsCreditExhausted(true);
             setInput(''); // Clear any existing input
-            // No modal on page load - just block the input
+            const alreadyShownExpired = sessionStorage.getItem(expiredModalKey);
+            if (!alreadyShownExpired) {
+              sessionStorage.setItem(expiredModalKey, 'true');
+              setShowCreditLimitModal(true); // Show modal only once per session
+            }
+          } else if (remainingPercent <= 0) {
+            setIsCreditExhausted(true);
+            setInput(''); // Clear any existing input
+            const alreadyShownCredit = sessionStorage.getItem(creditModalKey);
+            if (!alreadyShownCredit) {
+              sessionStorage.setItem(creditModalKey, 'true');
+              setShowCreditLimitModal(true); // Show modal only once per session
+            }
           }
         }
       } catch (error) {
@@ -103,7 +126,7 @@ export function Chat({
       }
     };
     checkCredit();
-  }, []);
+  }, [id]);
 
   // Initialize messageMetadata from initialMessages on mount
   // This preserves metadata (createdAt, usage, model) from history when new messages are sent
@@ -444,15 +467,29 @@ export function Chat({
       <AlertDialog open={showCreditLimitModal} onOpenChange={setShowCreditLimitModal}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-500">⚠️ เครดิตหมด</AlertDialogTitle>
+            <AlertDialogTitle className="text-red-500">
+              {isExpired ? '⏰ หมดเวลาการใช้งาน' : '⚠️ เครดิตของคุณไม่เพียงพอ'}
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-base">
-              {creditLimitMessage || 'เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ'}
+              {isExpired ? (
+                <>
+                  <p>บัญชีของคุณหมดอายุการใช้งานแล้ว คุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</p>
+                  <br />
+                  <p className="text-xs text-gray-500">หมายเหตุ: วันหมดอายุถูกกำหนดโดยผู้ดูแลระบบ</p>
+                </>
+              ) : (
+                <>
+                  <p>คุณได้ใช้เครดิต AI ครบตามโควต้ารายเดือนแล้ว ระบบจะรีเซ็ตโควต้าใหม่ในวันที่ 1 ของเดือนถัดไป หรือคุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</p>
+                  <br />
+                  <p className="text-xs text-gray-500">หมายเหตุ: ในเวอร์ชัน Demo นี้ยังไม่มีระบบ Local AI สำรอง</p>
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogAction
               onClick={() => {
-                window.location.reload();
+                setShowCreditLimitModal(false);
               }}
             >
               ตกลง
