@@ -68,7 +68,7 @@ export async function loginWithBackend(
     if (!response.ok) {
       return {
         success: false,
-        message: data.message || `Login failed with status ${response.status}`,
+        message: data.detail || data.message || `Login failed with status ${response.status}`,
       };
     }
 
@@ -150,5 +150,41 @@ export async function logoutFromBackend(token: string): Promise<boolean> {
   } catch (error) {
     console.error('Logout API error:', error);
     return false;
+  }
+}
+
+/**
+ * Verify email with backend API
+ */
+export async function verifyEmailWithBackend(token: string): Promise<{ success: boolean; message?: string }> {
+  try {
+    console.log('Verify email URL:', `${BACKEND_API_URL}/api/v1/verify-email-api`);
+    const response = await fetch(`${BACKEND_API_URL}/api/v1/verify-email-api`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    });
+
+    const data = await response.json();
+    console.log('Verify email response:', data);
+    if (!response.ok) {
+      return {
+        success: false,
+        message: data.message || `Please verify your email address. Check your inbox for the verification link.`,
+      };
+    }
+
+    return {
+      success: true,
+      message: data.message || 'Email verified successfully',
+    };
+  } catch (error) {
+    console.error('Verify email API error:', error);
+    return {
+      success: false,
+      message: 'Network error or server unavailable',
+    };
   }
 }

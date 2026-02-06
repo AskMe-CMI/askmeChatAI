@@ -315,3 +315,21 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
     };
   }
 }
+
+/**
+ * Verify email action
+ */
+import { verifyEmailWithBackend } from '@/lib/auth/api-client';
+
+export async function verifyEmailAction(token: string) {
+  try {
+    const result = await verifyEmailWithBackend(token);
+    return result;
+  } catch (error) {
+    console.error('Verify email action error:', error);
+    return {
+      success: false,
+      message: 'An unexpected error occurred',
+    };
+  }
+}
