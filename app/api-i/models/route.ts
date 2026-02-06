@@ -22,11 +22,11 @@ export async function GET() {
         }
 
         // Log the full URL that will be called
-        const fullUrl = `${process.env.BACKEND_API_URL}/v1/models`;
+        const fullUrl = `${process.env.BACKEND_API_URL}/model/list`;
         console.log('Calling Backend URL:', fullUrl);
 
         // Use backendApi which has built-in logging
-        const response = await backendApi.get('/v1/models', {
+        const response = await backendApi.get('/model/list', {
             token: token.value,
             headers: {
                 'Accept': 'application/json',

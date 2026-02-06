@@ -26,7 +26,7 @@ export async function fetchModelsFromBackend(): Promise<BackendModel[]> {
             return [];
         }
 
-        const response = await fetch(`${BACKEND_API_URL}/v1/models`, {
+        const response = await fetch(`${BACKEND_API_URL}/model/list`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,

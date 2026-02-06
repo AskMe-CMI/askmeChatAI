@@ -100,12 +100,18 @@ export interface RegisterActionState {
 // Define Zod schema for registration
 const registerSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  fullName: z.string().min(1, "Full name is required"),
+  display_name: z.string().min(1, "Display name is required"),
   email: z.string().email("Invalid email address"),
   password: z.string()
-    .min(10, "Password must be at least 10 characters")
-    .refine((val) => !/^\d+$/.test(val), {
-      message: "Password cannot be all numbers",
+    .min(8, "Password must be at least 8 characters")
+    .refine((val) => /[A-Z]/.test(val), {
+      message: "Password must contain at least one uppercase letter (A-Z)",
+    })
+    .refine((val) => /[a-z]/.test(val), {
+      message: "Password must contain at least one lowercase letter (a-z)",
+    })
+    .refine((val) => /[0-9]/.test(val), {
+      message: "Password must contain at least one number (0-9)",
     }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -123,7 +129,7 @@ export async function registerWithBackendAPI(
   try {
     const rawData = {
       username: formData.get('username') as string,
-      fullName: formData.get('fullName') as string,
+      display_name: formData.get('display_name') as string,
       email: formData.get('email') as string,
       password: formData.get('password') as string,
       confirmPassword: formData.get('confirmPassword') as string,
@@ -141,8 +147,7 @@ export async function registerWithBackendAPI(
       email: validatedData.email,
       username: validatedData.username,
       password: validatedData.password,
-      // full_name: validatedData.fullName,
-      // consent: true,
+      display_name: validatedData.display_name,
     };
 
     // Call register API (Server-side fetch)

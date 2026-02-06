@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useState, useRef } from 'react';
 import { toast } from '@/components/toast';
 import Form from 'next/form';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,40 @@ import { PDPAConsentModalAlt } from '@/components/pdpa-consent-modalA';
 export default function RegisterAltPage() {
     const router = useRouter();
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const passwordRef = useRef<HTMLInputElement>(null);
+    const confirmPasswordRef = useRef<HTMLInputElement>(null);
+
+    // Password validation helper
+    const isPasswordValid = (pwd: string) => {
+        return pwd.length >= 8 && /[A-Z]/.test(pwd) && /[a-z]/.test(pwd) && /[0-9]/.test(pwd);
+    };
+
+    const getPasswordValidationMessage = (pwd: string) => {
+        if (pwd.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+        if (!/[A-Z]/.test(pwd)) return 'รหัสผ่านต้องมีตัวพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว';
+        if (!/[a-z]/.test(pwd)) return 'รหัสผ่านต้องมีตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว';
+        if (!/[0-9]/.test(pwd)) return 'รหัสผ่านต้องมีตัวเลข (0-9) อย่างน้อย 1 ตัว';
+        return '';
+    };
+
+    // Set custom validation messages
+    useEffect(() => {
+        if (passwordRef.current) {
+            const message = password.length > 0 ? getPasswordValidationMessage(password) : '';
+            passwordRef.current.setCustomValidity(message);
+        }
+    }, [password]);
+
+    useEffect(() => {
+        if (confirmPasswordRef.current) {
+            const message = confirmPassword.length > 0 && confirmPassword !== password
+                ? 'รหัสผ่านไม่ตรงกัน'
+                : '';
+            confirmPasswordRef.current.setCustomValidity(message);
+        }
+    }, [password, confirmPassword]);
 
     const [state, formAction] = useActionState<RegisterActionState, FormData>(
         registerWithBackendAPI,
@@ -64,14 +98,14 @@ export default function RegisterAltPage() {
                     <Form action={handleSubmit} className="flex flex-col gap-4 px-4 sm:px-16">
                         <div className="flex flex-col gap-2">
                             <Label
-                                htmlFor="fullName"
+                                htmlFor="display_name"
                                 className="text-zinc-600 font-normal dark:text-zinc-400"
                             >
-                                Full Name
+                                Display Name
                             </Label>
                             <Input
-                                id="fullName"
-                                name="fullName"
+                                id="display_name"
+                                name="display_name"
                                 className="bg-muted text-md md:text-sm"
                                 type="text"
                                 placeholder="John Doe"
@@ -128,14 +162,48 @@ export default function RegisterAltPage() {
                                 Password
                             </Label>
                             <Input
+                                ref={passwordRef}
                                 id="password"
                                 name="password"
                                 className="bg-muted text-md md:text-sm"
                                 type="password"
-                                placeholder="Minimum 10 characters, not all numbers"
+                                placeholder="Min 8 chars, upper, lower, number"
                                 autoComplete="new-password"
                                 required
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                             />
+                            {/* Password Requirements Indicator */}
+                            {password.length > 0 && (
+                                <div className="text-xs space-y-1 mt-1">
+                                    {/* Check if all requirements are met */}
+                                    {password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) ? (
+                                        <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                                            <span>✓</span>
+                                            <span>รหัสผ่านของคุณสมบูรณ์แล้ว</span>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div className={`flex items-center gap-1.5 ${password.length >= 8 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                                <span>{password.length >= 8 ? '✓' : '✗'}</span>
+                                                <span>อย่างน้อย 8 ตัวอักษร</span>
+                                            </div>
+                                            <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                                <span>{/[A-Z]/.test(password) ? '✓' : '✗'}</span>
+                                                <span>มีตัวพิมพ์ใหญ่ (A-Z)</span>
+                                            </div>
+                                            <div className={`flex items-center gap-1.5 ${/[a-z]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                                <span>{/[a-z]/.test(password) ? '✓' : '✗'}</span>
+                                                <span>มีตัวพิมพ์เล็ก (a-z)</span>
+                                            </div>
+                                            <div className={`flex items-center gap-1.5 ${/[0-9]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
+                                                <span>{/[0-9]/.test(password) ? '✓' : '✗'}</span>
+                                                <span>มีตัวเลข (0-9)</span>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex flex-col gap-2">
@@ -146,6 +214,7 @@ export default function RegisterAltPage() {
                                 Confirm Password
                             </Label>
                             <Input
+                                ref={confirmPasswordRef}
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 className="bg-muted text-md md:text-sm"
@@ -153,6 +222,8 @@ export default function RegisterAltPage() {
                                 placeholder="Re-enter your password"
                                 autoComplete="new-password"
                                 required
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
                             />
                         </div>
 
