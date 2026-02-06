@@ -11,33 +11,35 @@ interface SuggestedActionsProps {
   chatId: string;
   sendMessage: UseChatHelpers<ChatMessage>['sendMessage'];
   selectedVisibilityType: VisibilityType;
+  disabled?: boolean;
 }
 
 function PureSuggestedActions({
   chatId,
   sendMessage,
   selectedVisibilityType,
+  disabled,
 }: SuggestedActionsProps) {
   const suggestedActions = [
     {
-      title: 'Explain the concept of',
-      label: 'Object-Oriented Programming',
-      action: 'Explain OOP',
+      title: 'AskMe Solutions & Consultants',
+      label: 'Digital Transformation & IT Consulting',
+      action: 'AskMe Solutions & Consultants Digital Transformation & IT Consulting',
     },
     {
-      title: 'Write code to',
-      label: `demonstrate djikstra's algorithm`,
-      action: `Write code to demonstrate djikstra's algorithm`,
+      title: 'AskMe Solutions & Consultants',
+      label: `AI, Data & Intelligent Solutions`,
+      action: `AskMe Solutions & Consultants AI, Data & Intelligent Solutions`,
     },
     {
-      title: 'Help me write an essay',
-      label: `about silicon valley`,
-      action: `Help me write an essay about silicon valley`,
+      title: 'AskMe Solutions & Consultants',
+      label: `Cloud, System Integration & Security`,
+      action: `AskMe Solutions & Consultants Cloud, System Integration & Security`,
     },
     {
-      title: 'What is the weather',
-      label: 'in San Francisco?',
-      action: 'What is the weather in San Francisco?',
+      title: 'AskMe Solutions & Consultants',
+      label: 'Enterprise Solutions & Custom Development',
+      action: 'AskMe Solutions & Consultants Enterprise Solutions & Custom Development',
     },
   ];
 
@@ -57,6 +59,7 @@ function PureSuggestedActions({
         >
           <Button
             variant="ghost"
+            disabled={disabled}
             onClick={async () => {
               // Note: URL update is handled in chat.tsx onData when Backend session ID is received
               sendMessage({
@@ -84,6 +87,7 @@ export const SuggestedActions = memo(
     if (prevProps.chatId !== nextProps.chatId) return false;
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
+    if (prevProps.disabled !== nextProps.disabled) return false;
 
     return true;
   },

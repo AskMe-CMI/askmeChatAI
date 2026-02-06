@@ -330,6 +330,7 @@ function PureMultimodalInput({
             sendMessage={sendMessage}
             chatId={chatId}
             selectedVisibilityType={selectedVisibilityType}
+            disabled={isCreditExhausted || isExpired}
           />
         )}
 

@@ -102,14 +102,15 @@ export function Chat({
           const creditModalKey = `credit_modal_shown_${id}`;
           
           // Check if expired first
-          if (limitExpired) {
+            if (limitExpired) {
             setIsExpired(true);
             setIsCreditExhausted(true);
             setInput(''); // Clear any existing input
             const alreadyShownExpired = sessionStorage.getItem(expiredModalKey);
-            if (!alreadyShownExpired) {
+            // Show if not shown in session OR if this is a fresh chat page (New Chat)
+            if (!alreadyShownExpired || initialMessages.length === 0) {
               sessionStorage.setItem(expiredModalKey, 'true');
-              setShowCreditLimitModal(true); // Show modal only once per session
+              setShowCreditLimitModal(true); 
             }
           } else if (remainingPercent <= 0) {
             setIsCreditExhausted(true);
