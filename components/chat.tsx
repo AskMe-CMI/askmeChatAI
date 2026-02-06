@@ -272,6 +272,7 @@ export function Chat({
         // Check if this is a credit limit error
         if (error.message.includes('เครดิตหมดแล้ว') || errorCause?.includes('เครดิตหมดแล้ว')) {
           setCreditLimitMessage(errorCause || error.message);
+          setIsCreditExhausted(true);
           setShowCreditLimitModal(true);
           return;
         }
@@ -465,7 +466,7 @@ export function Chat({
 
       {/* Credit Limit Modal */}
       <AlertDialog open={showCreditLimitModal} onOpenChange={setShowCreditLimitModal}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-1.5rem)] rounded-xl md:w-full">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-red-500">
               {isExpired ? '⏰ หมดเวลาการใช้งาน' : '⚠️ เครดิตของคุณไม่เพียงพอ'}
@@ -473,15 +474,13 @@ export function Chat({
             <AlertDialogDescription className="text-base">
               {isExpired ? (
                 <>
-                  <p>บัญชีของคุณหมดอายุการใช้งานแล้ว คุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</p>
-                  <br />
-                  <p className="text-xs text-gray-500">หมายเหตุ: วันหมดอายุถูกกำหนดโดยผู้ดูแลระบบ</p>
+                  <span className="block mb-2">บัญชีของคุณหมดอายุการใช้งานแล้ว คุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</span>
+                  <span className="block text-xs text-gray-500">หมายเหตุ: วันหมดอายุถูกกำหนดโดยผู้ดูแลระบบ</span>
                 </>
               ) : (
                 <>
-                  <p>คุณได้ใช้เครดิต AI ครบตามโควต้ารายเดือนแล้ว ระบบจะรีเซ็ตโควต้าใหม่ในวันที่ 1 ของเดือนถัดไป หรือคุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</p>
-                  <br />
-                  <p className="text-xs text-gray-500">หมายเหตุ: ในเวอร์ชัน Demo นี้ยังไม่มีระบบ Local AI สำรอง</p>
+                  <span className="block mb-2">คุณได้ใช้เครดิต AI ครบตามโควต้ารายเดือนแล้ว ระบบจะรีเซ็ตโควต้าใหม่ในวันที่ 1 ของเดือนถัดไป หรือคุณสามารถติดต่อผู้ดูแลระบบเพื่อขอเพิ่มโควต้าได้</span>
+                  <span className="block text-xs text-gray-500">หมายเหตุ: ในเวอร์ชัน Demo นี้ยังไม่มีระบบ Local AI สำรอง</span>
                 </>
               )}
             </AlertDialogDescription>
@@ -490,7 +489,6 @@ export function Chat({
             <AlertDialogAction
               onClick={() => {
                 setShowCreditLimitModal(false);
-                window.location.reload();
               }}
             >
               ตกลง
