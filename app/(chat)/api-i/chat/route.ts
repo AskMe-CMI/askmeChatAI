@@ -159,6 +159,26 @@ export async function POST(request: Request) {
               { status: 429 }
             );
           }
+
+          // Check for expiration
+          if (usageData.limit_expiry_date) {
+            const expiryDate = new Date(usageData.limit_expiry_date);
+            const now = new Date();
+
+            if (expiryDate < now) {
+              console.log('🚫 Credit expired - blocking chat request', {
+                expiry: usageData.limit_expiry_date,
+                now: now.toISOString()
+              });
+              return Response.json(
+                {
+                  code: 'rate_limit:chat',
+                  message: 'เครดิตหมดอายุแล้ว กรุณาติดต่อผู้ดูแลระบบ'
+                },
+                { status: 429 }
+              );
+            }
+          }
         }
       }
     } catch (creditError) {
@@ -387,7 +407,10 @@ export async function POST(request: Request) {
               completion_tokens: sessionResponse.usage?.completion_tokens || 0,
               total_tokens: sessionResponse.usage?.total_tokens || sessionResponse.ai_message.tokens || 0,
               model: sessionResponse.ai_message.model,
-              createdAt: sessionResponse.ai_message.created_at,
+              // If created_at is provided but doesn't have timezone info (ends with Z or +xx:xx), append Z to treat as UTC
+              createdAt: sessionResponse.ai_message.created_at && !sessionResponse.ai_message.created_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(sessionResponse.ai_message.created_at)
+                ? `${sessionResponse.ai_message.created_at}Z`
+                : sessionResponse.ai_message.created_at,
             };
 
             // Start text block

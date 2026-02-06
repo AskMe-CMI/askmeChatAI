@@ -52,7 +52,7 @@ const PureChatItem = ({
   const modelShort = getShortModelName(chat.model);
   const msgCount = chat.messageCount ?? 0;
   // Use updated_at as requested, formatted as Date Time
-  const lastActive = formatDisplayDate(chat.updatedAt, true);
+  const lastActive = formatDisplayDate(chat.updatedAt, true, true);
 
   return (
     <SidebarMenuItem>

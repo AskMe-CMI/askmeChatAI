@@ -74,7 +74,9 @@ function transformBackendMessageToUI(message: BackendMessage) {
     role: message.role as 'user' | 'assistant',
     parts,
     attachments: [],
-    createdAt: new Date(message.created_at),
+    createdAt: message.created_at && !message.created_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(message.created_at)
+      ? new Date(`${message.created_at}Z`)
+      : new Date(message.created_at),
     model: message.model, // Include model for displaying in UI
     usage: message.tokens ? {
       prompt_tokens: 0, // Backend logic might not separate them in list view, assuming total or unavailable
@@ -148,8 +150,12 @@ export async function GET(
       userId: userEmail,
       model: sessionData.model,
       visibility: 'private' as const,
-      createdAt: new Date(sessionData.created_at),
-      updatedAt: new Date(sessionData.updated_at),
+      createdAt: sessionData.created_at && !sessionData.created_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(sessionData.created_at)
+        ? new Date(`${sessionData.created_at}Z`)
+        : new Date(sessionData.created_at),
+      updatedAt: sessionData.updated_at && !sessionData.updated_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(sessionData.updated_at)
+        ? new Date(`${sessionData.updated_at}Z`)
+        : new Date(sessionData.updated_at),
     };
 
     // Transform messages

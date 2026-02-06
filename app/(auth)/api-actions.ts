@@ -298,7 +298,7 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
         is_active: true,
         is_blocked: false,
         limit_reached: rawData.limit_reached || false,
-        // Check if limit_expiry_date has passed (compare with current time in UTC+7)
+        // Check if limit_expiry_date has passed
         limit_expired: rawData.limit_expiry_date
           ? new Date(rawData.limit_expiry_date) < new Date()
           : false,

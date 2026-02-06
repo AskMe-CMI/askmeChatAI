@@ -269,11 +269,22 @@ export function Chat({
         const errorCause = (error as any).cause;
         const errorMessage = error.message || '';
 
-        // Check if this is a credit limit error
-        if (error.message.includes('เครดิตหมดแล้ว') || errorCause?.includes('เครดิตหมดแล้ว')) {
+        // Check if this is a credit limit or expiration error
+        const isExhausted = error.message.includes('เครดิตหมดแล้ว') || errorCause?.includes('เครดิตหมดแล้ว');
+        const isExpiredError = error.message.includes('เครดิตหมดอายุแล้ว') || errorCause?.includes('เครดิตหมดอายุแล้ว');
+
+        if (isExhausted || isExpiredError) {
           setCreditLimitMessage(errorCause || error.message);
           setIsCreditExhausted(true);
+          if (isExpiredError) {
+             setIsExpired(true);
+          }
           setShowCreditLimitModal(true);
+          
+          // Force refresh of credit button
+          if (typeof window !== 'undefined') {
+             window.dispatchEvent(new Event('credit-updated'));
+          }
           return;
         }
 

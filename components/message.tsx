@@ -313,7 +313,7 @@ const PurePreviewMessage = ({
             <div className="flex flex-row gap-2 items-center justify-end w-full px-1 mt-1">
               {message.createdAt && (
                 <div className="text-[10px] text-muted-foreground/60 select-none">
-                  {formatDisplayDate(message.createdAt, true)}
+                  {formatDisplayDate(message.createdAt, true, true)}
                 </div>
               )}
               {message.role === 'assistant' && message.usage && (

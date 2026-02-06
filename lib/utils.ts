@@ -120,8 +120,25 @@ export function getTextFromMessage(message: ChatMessage): string {
  * @param date - Date object or ISO string
  * @param includeTime - Include time in format (e.g., "5 Feb 2026 14:30")
  */
-export function formatDisplayDate(date: Date | string, includeTime = false): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
+export function formatDisplayDate(date: Date | string, includeTime = false, forceUTC = false): string {
+  let d: Date;
+
+  if (typeof date === 'string') {
+    // If forceUTC is true and the string is naive (no Z or offset), append Z
+    if (forceUTC && !date.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(date)) {
+      d = new Date(`${date}Z`);
+    } else {
+      d = new Date(date);
+    }
+  } else {
+    d = date;
+    // If forceUTC is true and it's a Date object, we assume it was parsed from a naive UTC string
+    // which the browser interpreted as Local. We need to shift it to treat local components as UTC.
+    if (forceUTC) {
+      d = new Date(d.getTime() - (d.getTimezoneOffset() * 60000));
+    }
+  }
+
   const day = d.getDate();
   const month = d.toLocaleDateString('en-US', { month: 'short' });
   const year = d.getFullYear();

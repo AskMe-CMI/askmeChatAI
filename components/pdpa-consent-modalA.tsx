@@ -32,7 +32,7 @@ export function PDPAConsentModalAlt({ onAccept }: { onAccept?: (marketingConsent
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 max-h-[95vh] flex flex-col md:mx-4">
+            <div className="relative z-10 w-full max-w-4xl bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-300 max-h-[85dvh] flex flex-col md:mx-4">
                 {/* Header */}
                 <div className="flex items-center gap-3 p-6 border-b shrink-0">
                     <div className="w-12 h-12 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center shrink-0">

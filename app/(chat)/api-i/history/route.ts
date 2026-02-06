@@ -28,9 +28,15 @@ function transformBackendToChat(session: BackendSession, userId: string) {
     visibility: 'private' as const,
     model: session.model,
     messageCount: session.message_count,
-    lastMessageAt: session.last_message_at ? new Date(session.last_message_at) : null,
-    createdAt: new Date(session.created_at),
-    updatedAt: new Date(session.updated_at),
+    lastMessageAt: session.last_message_at && !session.last_message_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(session.last_message_at)
+      ? new Date(`${session.last_message_at}Z`)
+      : session.last_message_at ? new Date(session.last_message_at) : null,
+    createdAt: session.created_at && !session.created_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(session.created_at)
+      ? new Date(`${session.created_at}Z`)
+      : new Date(session.created_at),
+    updatedAt: session.updated_at && !session.updated_at.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(session.updated_at)
+      ? new Date(`${session.updated_at}Z`)
+      : new Date(session.updated_at),
   };
 }
 

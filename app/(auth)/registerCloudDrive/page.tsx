@@ -27,10 +27,10 @@ export default function RegisterAltPage() {
     };
 
     const getPasswordValidationMessage = (pwd: string) => {
-        if (pwd.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
-        if (!/[A-Z]/.test(pwd)) return 'รหัสผ่านต้องมีตัวพิมพ์ใหญ่ (A-Z) อย่างน้อย 1 ตัว';
-        if (!/[a-z]/.test(pwd)) return 'รหัสผ่านต้องมีตัวพิมพ์เล็ก (a-z) อย่างน้อย 1 ตัว';
-        if (!/[0-9]/.test(pwd)) return 'รหัสผ่านต้องมีตัวเลข (0-9) อย่างน้อย 1 ตัว';
+        if (pwd.length < 8) return 'Password must be at least 8 characters';
+        if (!/[A-Z]/.test(pwd)) return 'Password must contain at least one uppercase letter (A-Z)';
+        if (!/[a-z]/.test(pwd)) return 'Password must contain at least one lowercase letter (a-z)';
+        if (!/[0-9]/.test(pwd)) return 'Password must contain at least one number (0-9)';
         return '';
     };
 
@@ -45,7 +45,7 @@ export default function RegisterAltPage() {
     useEffect(() => {
         if (confirmPasswordRef.current) {
             const message = confirmPassword.length > 0 && confirmPassword !== password
-                ? 'รหัสผ่านไม่ตรงกัน'
+                ? 'Passwords do not match'
                 : '';
             confirmPasswordRef.current.setCustomValidity(message);
         }
@@ -86,7 +86,7 @@ export default function RegisterAltPage() {
     return (
         <>
             <PDPAConsentModalAlt />
-            <div className="flex h-dvh w-screen items-start pt-12 md:pt-0 md:items-center justify-center bg-background">
+            <div className="flex h-dvh w-screen items-start pt-24 md:pt-0 md:items-center justify-center bg-background">
                 <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-8">
                     <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
                         <h3 className="text-xl font-semibold dark:text-zinc-50">Register</h3>
@@ -180,25 +180,25 @@ export default function RegisterAltPage() {
                                     {password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /[0-9]/.test(password) ? (
                                         <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
                                             <span>✓</span>
-                                            <span>รหัสผ่านของคุณสมบูรณ์แล้ว</span>
+                                            <span>Password meets all requirements</span>
                                         </div>
                                     ) : (
                                         <>
                                             <div className={`flex items-center gap-1.5 ${password.length >= 8 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
                                                 <span>{password.length >= 8 ? '✓' : '✗'}</span>
-                                                <span>อย่างน้อย 8 ตัวอักษร</span>
+                                                <span>At least 8 characters</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${/[A-Z]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
                                                 <span>{/[A-Z]/.test(password) ? '✓' : '✗'}</span>
-                                                <span>มีตัวพิมพ์ใหญ่ (A-Z)</span>
+                                                <span>At least 1 uppercase letter (A-Z)</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${/[a-z]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
                                                 <span>{/[a-z]/.test(password) ? '✓' : '✗'}</span>
-                                                <span>มีตัวพิมพ์เล็ก (a-z)</span>
+                                                <span>At least 1 lowercase letter (a-z)</span>
                                             </div>
                                             <div className={`flex items-center gap-1.5 ${/[0-9]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`}>
                                                 <span>{/[0-9]/.test(password) ? '✓' : '✗'}</span>
-                                                <span>มีตัวเลข (0-9)</span>
+                                                <span>At least 1 number (0-9)</span>
                                             </div>
                                         </>
                                     )}
@@ -233,7 +233,7 @@ export default function RegisterAltPage() {
 
                     </Form>
 
-                    <div className="flex flex-col gap-3 px-4 sm:px-16">
+                    {/* <div className="flex flex-col gap-3 px-4 sm:px-16">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
                                 <span className="w-full border-t" />
@@ -252,7 +252,7 @@ export default function RegisterAltPage() {
                         >
                             Login
                         </button>
-                    </div>
+                    </div> */}
 
                     <div className="px-4 sm:px-16 text-center">
                         <p className="text-xs text-gray-400">
