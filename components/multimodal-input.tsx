@@ -60,6 +60,7 @@ function PureMultimodalInput({
   className,
   selectedVisibilityType,
   isCreditExhausted,
+  isExpired,
 }: {
   chatId: string;
   input: string;
@@ -74,6 +75,7 @@ function PureMultimodalInput({
   className?: string;
   selectedVisibilityType: VisibilityType;
   isCreditExhausted?: boolean;
+  isExpired?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();
@@ -376,7 +378,7 @@ function PureMultimodalInput({
       <Textarea
         data-testid="multimodal-input"
         ref={textareaRef}
-        placeholder={isCreditExhausted ? "เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ" : "Send a message..."}
+        placeholder={isExpired ? "บัญชีของคุณหมดอายุแล้ว กรุณาติดต่อผู้ดูแลระบบ" : (isCreditExhausted ? "เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ" : "Send a message...")}
         value={input}
         onChange={handleInput}
         className={cx(
@@ -449,6 +451,7 @@ export const MultimodalInput = memo(
     if (prevProps.selectedVisibilityType !== nextProps.selectedVisibilityType)
       return false;
     if (prevProps.isCreditExhausted !== nextProps.isCreditExhausted) return false;
+    if (prevProps.isExpired !== nextProps.isExpired) return false;
 
     return true;
   },

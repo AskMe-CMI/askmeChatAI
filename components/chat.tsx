@@ -442,6 +442,7 @@ export function Chat({
               sendMessage={sendMessage}
               selectedVisibilityType={visibilityType}
               isCreditExhausted={isCreditExhausted}
+              isExpired={isExpired}
             />
           )}
         </div>
