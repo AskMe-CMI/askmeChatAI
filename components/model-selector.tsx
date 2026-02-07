@@ -111,7 +111,9 @@ export function ModelSelector({
           className="md:px-2 md:h-[34px] bg-white shadow-md hover:bg-white/90 dark:bg-zinc-900 dark:hover:bg-zinc-800"
           disabled={isLoading}
         >
-          {isLoading ? 'Loading...' : selectedChatModel?.name || 'Select Model'}
+          <span className="truncate max-w-[150px] md:max-w-none block text-left">
+            {isLoading ? 'Loading...' : selectedChatModel?.name || 'Select Model'}
+          </span>
           <ChevronDownIcon />
         </Button>
       </DropdownMenuTrigger>
