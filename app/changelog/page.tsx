@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,32 +18,7 @@ export default function ChangeLogPage() {
   const router = useRouter();
   const autoPlayRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-play functionality (7 seconds)
-  useEffect(() => {
-    startAutoPlay();
-    return () => stopAutoPlay();
-  }, [currentIndex]);
-
-  const startAutoPlay = () => {
-    stopAutoPlay();
-    autoPlayRef.current = setTimeout(() => {
-        paginate(1);
-    }, 7000); // 7 seconds
-  };
-
-  const stopAutoPlay = () => {
-    if (autoPlayRef.current) {
-        clearTimeout(autoPlayRef.current);
-        autoPlayRef.current = null;
-    }
-  };
-
-  const handleManualNav = (newDirection: number) => {
-    stopAutoPlay();
-    paginate(newDirection);
-  };
-
-  const paginate = (newDirection: number) => {
+  const paginate = useCallback((newDirection: number) => {
     setDirection(newDirection);
     setCurrentIndex((prevIndex) => {
         let nextIndex = prevIndex + newDirection;
@@ -51,6 +26,31 @@ export default function ChangeLogPage() {
         if (nextIndex >= PRESENTATION_IMAGES.length) nextIndex = 0;
         return nextIndex;
     });
+  }, []);
+
+  const stopAutoPlay = useCallback(() => {
+    if (autoPlayRef.current) {
+        clearTimeout(autoPlayRef.current);
+        autoPlayRef.current = null;
+    }
+  }, []);
+
+  const startAutoPlay = useCallback(() => {
+    stopAutoPlay();
+    autoPlayRef.current = setTimeout(() => {
+        paginate(1);
+    }, 7000); // 7 seconds
+  }, [paginate, stopAutoPlay]);
+
+  // Auto-play functionality (7 seconds)
+  useEffect(() => {
+    startAutoPlay();
+    return () => stopAutoPlay();
+  }, [currentIndex, startAutoPlay, stopAutoPlay]);
+
+  const handleManualNav = (newDirection: number) => {
+    stopAutoPlay();
+    paginate(newDirection);
   };
 
   const variants = {
@@ -81,11 +81,19 @@ export default function ChangeLogPage() {
       <div className="absolute inset-0 bg-gradient-to-br from-[#0f172a] via-[#020617] to-[#000000]" />
       
       {/* Left-side cyan/blue glow (The "AI" portal light source) */}
-      <div className="absolute -left-[10%] top-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none opacity-60 mix-blend-screen" />
-      <div className="absolute -left-[5%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none opacity-50 mix-blend-screen" />
+      <div className="absolute left-[-10%] top-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none opacity-60 mix-blend-screen" />
+      <div className="absolute left-[-5%] top-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none opacity-50 mix-blend-screen" />
 
       {/* Subtle grid overlay (CSS only, no external file needed) */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+      <div 
+        className="absolute inset-0 pointer-events-none"
+        style={{
+            backgroundImage: "linear-gradient(to right, #80808012 1px, transparent 1px), linear-gradient(to bottom, #80808012 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+            maskImage: "radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)"
+        }}
+      />
 
       {/* Back Button */}
       <button
