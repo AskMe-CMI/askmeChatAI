@@ -7,8 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 
 // Array of presentation images
-const PRESENTATION_IMAGES = Array.from({ length: 14 }, (_, i) => ({
-    src: `/images/present${String(i + 1).padStart(2, '0')}.jpg`,
+const PRESENTATION_IMAGES = Array.from({ length: 13 }, (_, i) => ({
+    src: `/images/present${String(i + 1).padStart(2, '0')}.png`,
     alt: `AskMe AI Gateway Presentation Slide ${i + 1}`
 }));
 
