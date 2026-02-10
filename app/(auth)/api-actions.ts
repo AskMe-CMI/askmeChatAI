@@ -23,6 +23,8 @@ export interface UserStatus {
   is_blocked: boolean;
   limit_reached: boolean;
   limit_expired: boolean;
+  expired_date: Date;
+  now_date: Date;
 }
 
 export interface UsageStatsResponse {
@@ -300,9 +302,11 @@ export async function getUsageStatsAction(): Promise<{ success: boolean; data?: 
         limit_reached: rawData.limit_reached || false,
         // Check if limit_expiry_date has passed
         limit_expired: rawData.limit_expiry_date
-          ? new Date(rawData.limit_expiry_date) < new Date()
+          ? new Date(rawData.limit_expiry_date) < (Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? new Date(new Date().getTime() + (7 * 60 * 60 * 1000)) : new Date())
           : false,
-      },
+        expired_date: new Date(rawData.limit_expiry_date),
+        now_date: new Date()
+      }
     };
 
     return { success: true, data };

@@ -94,6 +94,9 @@ export function Chat({
         if (result.success && result.data) {
           const remainingPercent = 100 - (result.data.tokens.percentage_used || 0);
           const limitExpired = result.data.status.limit_expired || false;
+          console.log('💰 Initial expired_date:', result.data.status.expired_date );
+          console.log('💰 Initial now_date:', result.data.status.now_date );
+          // console.log('💰 Initial days_diff:', result.data.status.expired_date > result.data.status.now_date );
           console.log('💰 Initial credit check:', { remainingPercent, limitExpired, expiry_date: result.data.tokens.expiry_date });
           
           // Check if we already showed the modal in this session
@@ -451,7 +454,37 @@ export function Chat({
               setAttachments={setAttachments}
               messages={messages}
               setMessages={setMessages}
-              sendMessage={sendMessage}
+              sendMessage={async (message: any, options: any) => {
+                // Check credit/expiration before sending
+                try {
+                  const result = await getUsageStatsAction();
+                  if (result.success && result.data) {
+                    const remainingPercent = 100 - (result.data.tokens.percentage_used || 0);
+                    const limitExpired = result.data.status.limit_expired || false;
+                    
+                    if (limitExpired) {
+                      setIsExpired(true);
+                      setIsCreditExhausted(true);
+                      setShowCreditLimitModal(true);
+                      return; // Stop sending
+                    } else if (remainingPercent <= 0) {
+                      setIsCreditExhausted(true);
+                      setShowCreditLimitModal(true);
+                      return; // Stop sending
+                    }
+                  }
+                } catch (error) {
+                  console.error('Failed to check credit before sending:', error);
+                  // Optionally allow sending if check fails, or block it. 
+                  // For now, let's allow it but log the error, 
+                  // effectively failing open if the check service is down, 
+                  // OR we could fail closed. 
+                  // Given the requirement, let's try to proceed 
+                  // as the backend likely has its own check too.
+                }
+
+                return sendMessage(message, options);
+              }}
               selectedVisibilityType={visibilityType}
               isCreditExhausted={isCreditExhausted}
               isExpired={isExpired}
