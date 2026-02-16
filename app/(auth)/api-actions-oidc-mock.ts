@@ -22,6 +22,8 @@ export async function loginWithBackendAPI(
   formData: FormData,
 ): Promise<LoginActionState> {
   try {
+    console.log('Login action called: ', formData);
+
     const validatedData = authFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
