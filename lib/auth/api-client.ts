@@ -7,6 +7,7 @@ const BACKEND_API_URL = process.env.BACKEND_API_URL;
 export interface LoginRequest {
   email: string;
   password: string;
+  isOIDC?: boolean | null;
 }
 
 export interface LoginResponse {
@@ -39,14 +40,20 @@ export async function loginWithBackend(
   credentials: LoginRequest,
 ): Promise<LoginResponse> {
   try {
-    console.log('Login URL:', `${BACKEND_API_URL}/api/v1/login`);
+    console.log('Login credentials:', credentials);
+    const body_login = {
+      email: credentials.email,
+      password: credentials.password
+    };
 
-    const response = await fetch(`${BACKEND_API_URL}/api/v1/login`, {
+    console.log('Login URL:', `${BACKEND_API_URL}/v1/login`);
+
+    const response = await fetch(`${BACKEND_API_URL}/v1/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(credentials),
+      body: JSON.stringify(body_login),
     });
 
     // Check content type json
@@ -66,6 +73,8 @@ export async function loginWithBackend(
     }
 
     if (!response.ok) {
+      console.log('Login failed!'); //jaydai continue
+
       return {
         success: false,
         message: data.detail || data.message || `Login failed with status ${response.status}`,

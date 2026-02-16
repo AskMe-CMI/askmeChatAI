@@ -53,7 +53,7 @@ export default function OIDCCallbackPage() {
       });
 
       setTimeout(() => {
-        router.push('/logint');
+        router.push('/login');
       }, 2000);
     }
   }, [state, router]);

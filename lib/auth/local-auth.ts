@@ -4,7 +4,7 @@ import {
   verifyTokenWithBackend,
   type LoginRequest,
   type UserProfile,
-} from './api-client';
+} from '@/lib/auth/api-client';
 
 const COOKIE_NAME = 'session';
 const COOKIE_OPTIONS = {

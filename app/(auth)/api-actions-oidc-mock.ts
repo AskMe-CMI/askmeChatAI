@@ -7,6 +7,7 @@ import { signInWithAPI, signOutFromAPI } from '@/lib/auth/local-auth';
 const authFormSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  isOIDC: z.boolean().default(true)
 });
 
 export interface LoginActionState {
@@ -27,6 +28,7 @@ export async function loginWithBackendAPI(
     const validatedData = authFormSchema.parse({
       email: formData.get('email'),
       password: formData.get('password'),
+      isOIDC: true
     });
 
     console.log('Processing login for:', validatedData.email);

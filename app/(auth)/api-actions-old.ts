@@ -58,7 +58,7 @@ export async function loginWithBackendAPI(
       password: formData.get('password'),
     });
 
-    console.log('Processing Email for:', validatedData.email);
+    console.log('Processing login for:', validatedData.email);
 
     const result = await signInWithAPI(validatedData);
 
@@ -241,99 +241,99 @@ export async function logoutFromBackendAPI(): Promise<void> {
  * Get usage stats from backend API
  * Uses /api/token-usage/my-usage endpoint
  */
-export async function getUsageStatsAction(): Promise<{ success: boolean; data?: UsageStatsResponse; message?: string }> {
-  try {
-    const token = await getStoredToken();
+// export async function getUsageStatsAction(): Promise<{ success: boolean; data?: UsageStatsResponse; message?: string }> {
+//   try {
+//     const token = await getStoredToken();
 
-    if (!token) {
-      return {
-        success: false,
-        message: 'Not authenticated',
-      };
-    }
+//     if (!token) {
+//       return {
+//         success: false,
+//         message: 'Not authenticated',
+//       };
+//     }
 
-    const response = await fetch(`${BACKEND_API_URL}/api/token-usage/my-usage`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'accept': 'application/json'
-      },
-      cache: 'no-store' // Ensure fresh data
-    });
+//     const response = await fetch(`${BACKEND_API_URL}/api/token-usage/my-usage`, {
+//       method: 'GET',
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'accept': 'application/json'
+//       },
+//       cache: 'no-store' // Ensure fresh data
+//     });
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        return { success: false, message: 'Session expired' };
-      }
-      return { success: false, message: `Failed to fetch stats: ${response.status}` };
-    }
+//     if (!response.ok) {
+//       if (response.status === 401) {
+//         return { success: false, message: 'Session expired' };
+//       }
+//       return { success: false, message: `Failed to fetch stats: ${response.status}` };
+//     }
 
-    // Response format from /api/token-usage/my-usage:
-    // {
-    //   "user_id": 17,
-    //   "email": "user@example.com",
-    //   "tokens_used": 27943,
-    //   "token_limit": 10000,
-    //   "tokens_remaining": 0,
-    //   "usage_percentage": 279.43,
-    //   "limit_reached": true,
-    //   "limit_expiry_date": null
-    // }
-    const rawData = await response.json();
+//     // Response format from /api/token-usage/my-usage:
+//     // {
+//     //   "user_id": 17,
+//     //   "email": "user@example.com",
+//     //   "tokens_used": 27943,
+//     //   "token_limit": 10000,
+//     //   "tokens_remaining": 0,
+//     //   "usage_percentage": 279.43,
+//     //   "limit_reached": true,
+//     //   "limit_expiry_date": null
+//     // }
+//     const rawData = await response.json();
 
-    // Transform to UsageStatsResponse format
-    const data: UsageStatsResponse = {
-      user_id: String(rawData.user_id),
-      email: rawData.email,
-      tokens: {
-        used: rawData.tokens_used || 0,
-        limit: rawData.token_limit || 0,
-        remaining: Math.max(rawData.tokens_remaining || 0, 0),
-        percentage_used: rawData.usage_percentage || 0,
-        expiry_date: rawData.limit_expiry_date || null,
-      },
-      usage: {
-        request_count: 0, // Not provided by this endpoint
-        spend: 0, // Not provided by this endpoint
-      },
-      status: {
-        is_active: true,
-        is_blocked: false,
-        limit_reached: rawData.limit_reached || false,
-        // Check if limit_expiry_date has passed
-        limit_expired: rawData.limit_expiry_date
-          ? new Date(rawData.limit_expiry_date) < (Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? new Date(new Date().getTime() + (7 * 60 * 60 * 1000)) : new Date())
-          : false,
-        expired_date: new Date(rawData.limit_expiry_date),
-        now_date: new Date()
-      }
-    };
+//     // Transform to UsageStatsResponse format
+//     const data: UsageStatsResponse = {
+//       user_id: String(rawData.user_id),
+//       email: rawData.email,
+//       tokens: {
+//         used: rawData.tokens_used || 0,
+//         limit: rawData.token_limit || 0,
+//         remaining: Math.max(rawData.tokens_remaining || 0, 0),
+//         percentage_used: rawData.usage_percentage || 0,
+//         expiry_date: rawData.limit_expiry_date || null,
+//       },
+//       usage: {
+//         request_count: 0, // Not provided by this endpoint
+//         spend: 0, // Not provided by this endpoint
+//       },
+//       status: {
+//         is_active: true,
+//         is_blocked: false,
+//         limit_reached: rawData.limit_reached || false,
+//         // Check if limit_expiry_date has passed
+//         limit_expired: rawData.limit_expiry_date
+//           ? new Date(rawData.limit_expiry_date) < (Intl.DateTimeFormat().resolvedOptions().timeZone == 'UTC' ? new Date(new Date().getTime() + (7 * 60 * 60 * 1000)) : new Date())
+//           : false,
+//         expired_date: new Date(rawData.limit_expiry_date),
+//         now_date: new Date()
+//       }
+//     };
 
-    return { success: true, data };
+//     return { success: true, data };
 
-  } catch (error) {
-    console.error('Get usage stats error:', error);
-    return {
-      success: false,
-      message: 'Failed to fetch usage statistics',
-    };
-  }
-}
+//   } catch (error) {
+//     console.error('Get usage stats error:', error);
+//     return {
+//       success: false,
+//       message: 'Failed to fetch usage statistics',
+//     };
+//   }
+// }
 
-/**
- * Verify email action
- */
-import { verifyEmailWithBackend } from '@/lib/auth/api-client';
+// /**
+//  * Verify email action
+//  */
+// import { verifyEmailWithBackend } from '@/lib/auth/api-client';
 
-export async function verifyEmailAction(token: string) {
-  try {
-    const result = await verifyEmailWithBackend(token);
-    return result;
-  } catch (error) {
-    console.error('Verify email action error:', error);
-    return {
-      success: false,
-      message: 'An unexpected error occurred',
-    };
-  }
-}
+// export async function verifyEmailAction(token: string) {
+//   try {
+//     const result = await verifyEmailWithBackend(token);
+//     return result;
+//   } catch (error) {
+//     console.error('Verify email action error:', error);
+//     return {
+//       success: false,
+//       message: 'An unexpected error occurred',
+//     };
+//   }
+// }
