@@ -48,6 +48,8 @@ export async function loginWithBackend(
     };
 
     console.log('Login URL:', `${BACKEND_API_URL}/v1/login`);
+    // console.log('credentials email:', `${body_login.email}`);
+    // console.log('credentials password:', `${body_login.password}`);
 
     const response = await fetch(`${BACKEND_API_URL}/v1/login`, {
       method: 'POST',
@@ -97,7 +99,7 @@ export async function loginWithBackend(
         });
 
         if (responseRegister.status < 200 || responseRegister.status >= 300) {
-          console.log('registerData: ', JSON.stringify(registrationData));
+          // console.log('registerData: ', JSON.stringify(registrationData));
           try {
             const errorData = await responseRegister.json();
             console.log('Register failed body:', errorData);

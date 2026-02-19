@@ -100,22 +100,22 @@ export default function LoginPage() {
           <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
             <h3 className="text-xl font-semibold dark:text-zinc-50">Login</h3>
             <p className="text-sm text-gray-500 dark:text-zinc-400 mb-9">
-              Sign in to your AskMe AI Gateway account
+              Log in to your AskMe AI Gateway internal account
             </p>
           </div>
           {/* {process.env.NEXT_PUBLIC_ALLOW_LOCAL_LOGIN.toLowerCase() !== 'false' && ( */}
             <>
-              <AuthForm action={handleSubmit} defaultEmail={email}>
+              {/* <AuthForm action={handleSubmit} defaultEmail={email}>
                 <SubmitButton isSuccessful={state.status === 'success'}>
                   Login
                 </SubmitButton>
-              </AuthForm>
+              </AuthForm> */}
               {/* <div className="flex flex-col px-4 sm:px-16">
               <Separator className="bg-zinc-600" />
             </div> */}
             </>
           {/* )} */}
-          {/* <div className="flex flex-col gap-3 px-4 sm:px-16"> */}
+          <div className="flex flex-col gap-3 px-4 sm:px-16">
             {/* MSAL button */}
             {/* <div className="relative">
               <div className="absolute inset-0 flex items-center">
@@ -124,7 +124,7 @@ export default function LoginPage() {
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">Or</span>
               </div>
-            </div>
+            </div> */}
             <Button
               onClick={handleOIDCLogin}
               disabled={isLoading}
@@ -141,7 +141,7 @@ export default function LoginPage() {
                 </svg>
               )}
               {isLoading ? 'Redirecting...' : 'Login with Microsoft'}
-            </Button> */}
+            </Button>
             {/* register button */}
             {/* <div className="relative mt-4">
               <div className="absolute inset-0 flex items-center">
@@ -159,7 +159,7 @@ export default function LoginPage() {
             >
               Register
             </button> */}
-          {/* </div> */}
+          </div>
         </div>
       </div>
     </>
