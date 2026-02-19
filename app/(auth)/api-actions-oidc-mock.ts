@@ -11,7 +11,7 @@ const authFormSchema = z.object({
 });
 
 export interface LoginActionState {
-  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data';
+  status: 'idle' | 'in_progress' | 'success' | 'failed' | 'invalid_data' | 'registered_success';
   message?: string;
 }
 
@@ -36,9 +36,13 @@ export async function loginWithBackendAPI(
     const result = await signInWithAPI(validatedData);
 
     if (result.success) {
-      console.log('Login successful, revalidating path');
-      revalidatePath('/');
-      return { status: 'success' };
+      if (result.isRegistered) {
+        console.log('Registration successful, redirecting to success page');
+        return { status: 'registered_success' };
+      } else {
+        console.log('Login successful, revalidating path');
+        return { status: 'success' };
+      }
     } else {
       console.log('Login failed:', result.message);
       return {

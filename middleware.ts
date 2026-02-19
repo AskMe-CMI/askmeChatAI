@@ -59,7 +59,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Allow requests to auth pages to proceed
-  if (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint' || pathname.startsWith('/register') || pathname.startsWith('/verify-email')) {
+  if (pathname === '/login' || pathname === '/login-backup' || pathname === '/oidc/callback' || pathname === '/logint' || pathname.startsWith('/register/success') || pathname.startsWith('/register') || pathname.startsWith('/verify-email')) {
     console.log('🔓 Allowing auth page access:', pathname);
     return NextResponse.next();
   }

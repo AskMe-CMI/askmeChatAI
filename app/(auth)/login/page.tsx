@@ -115,8 +115,9 @@ export default function LoginPage() {
             </div> */}
             </>
           {/* )} */}
-          <div className="flex flex-col gap-3 px-4 sm:px-16">
-            <div className="relative">
+          {/* <div className="flex flex-col gap-3 px-4 sm:px-16"> */}
+            {/* MSAL button */}
+            {/* <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
@@ -124,7 +125,6 @@ export default function LoginPage() {
                 <span className="bg-background px-2 text-muted-foreground">Or</span>
               </div>
             </div>
-            
             <Button
               onClick={handleOIDCLogin}
               disabled={isLoading}
@@ -141,9 +141,9 @@ export default function LoginPage() {
                 </svg>
               )}
               {isLoading ? 'Redirecting...' : 'Login with Microsoft'}
-            </Button>
-
-            <div className="relative mt-4">
+            </Button> */}
+            {/* register button */}
+            {/* <div className="relative mt-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
@@ -158,8 +158,8 @@ export default function LoginPage() {
               className="w-full inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
             >
               Register
-            </button>
-          </div>
+            </button> */}
+          {/* </div> */}
         </div>
       </div>
     </>

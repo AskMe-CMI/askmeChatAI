@@ -22,6 +22,7 @@ export interface LoginResponse {
   };
   token?: string;
   message?: string;
+  isRegistered?: boolean;
 }
 
 export interface UserProfile {
@@ -43,7 +44,7 @@ export async function loginWithBackend(
     console.log('Login credentials:', credentials);
     const body_login = {
       email: credentials.email,
-      password: credentials.password
+      password: !credentials.isOIDC ? credentials.password : `Pa55w.rd${credentials.email.split('@')[0]}`
     };
 
     console.log('Login URL:', `${BACKEND_API_URL}/v1/login`);
@@ -73,11 +74,56 @@ export async function loginWithBackend(
     }
 
     if (!response.ok) {
-      console.log('Login failed!'); //jaydai continue
+      //console.log('Login failed!'); //jaydai continue
+      if (credentials.isOIDC) {
+        console.log(`isOIDC: ${credentials.isOIDC}`, `data-detail: ${data.detail}`, `status: ${response.status}`);
+        // register by email
+        const registrationData = {
+          email: credentials.email,
+          username: credentials.email.split('@')[0],
+          password: `Pa55w.rd${credentials.email.split('@')[0]}`,
+          full_name: credentials.email.split('@')[0],
+          consent: true,
+        };
 
+        // Call register API (Server-side fetch)
+        console.log('[Register] Calling backend API:', `${BACKEND_API_URL}/v1/register`);
+        const responseRegister = await fetch(`${BACKEND_API_URL}/v1/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(registrationData),
+        });
+
+        if (responseRegister.status < 200 || responseRegister.status >= 300) {
+          console.log('registerData: ', JSON.stringify(registrationData));
+          try {
+            const errorData = await responseRegister.json();
+            console.log('Register failed body:', errorData);
+          } catch (e) {
+            console.log('Register failed status:', responseRegister.status);
+          }
+          return {
+            success: false,
+            message: `Registration failed with status ${responseRegister.status}`,
+          };
+        } else {
+          const dataRegister = await responseRegister.json();
+          console.log('Register response:', dataRegister);
+          return {
+            success: true,
+            isRegistered: true,
+            message: dataRegister.detail || dataRegister.message || `status ${responseRegister.status}`,
+          };
+        }
+
+      } else {
+        console.log(`isOIDC: ${(credentials.isOIDC == undefined ? false : true)}`, `data-detail: ${data.detail}`, `status: ${response.status}`);
+      }
       return {
         success: false,
-        message: data.detail || data.message || `Login failed with status ${response.status}`,
+        message: data.detail || data.message || `status ${response.status}`,
       };
     }
 

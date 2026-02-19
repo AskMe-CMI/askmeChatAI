@@ -20,11 +20,19 @@ const COOKIE_OPTIONS = {
  */
 export async function signInWithAPI(
   credentials: LoginRequest,
-): Promise<{ success: boolean; message?: string }> {
+): Promise<{ success: boolean; message?: string; isRegistered?: boolean }> {
   try {
     // console.log('Attempting to login with backend API:', credentials.email);
 
     const result = await loginWithBackend(credentials);
+
+    if (result.success && result.isRegistered) {
+      return {
+        success: true,
+        isRegistered: true,
+        message: result.message
+      };
+    }
 
     if (!result.success || !result.token) {
       // console.log('Login failed:', result.message);

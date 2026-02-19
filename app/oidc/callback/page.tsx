@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, useActionState, useTransition } from 'react';
+import { useEffect, useState, useActionState, useTransition, useRef } from 'react';
 import { toast } from '@/components/toast';
 import { LoaderIcon } from '@/components/icons';
 import { loginWithBackendAPI, type LoginActionState } from '@/app/(auth)/api-actions-oidc-mock';
@@ -33,6 +33,8 @@ export default function OIDCCallbackPage() {
 
   // ติดตามการเปลี่ยนแปลงของ state จาก formAction
   useEffect(() => {
+    console.log('state!: ',state);
+    
     if (state.status === 'success') {
       console.log('✅ Login successful, redirecting...');
       setStatus('Authentication successful! Redirecting...');
@@ -44,6 +46,25 @@ export default function OIDCCallbackPage() {
       setTimeout(() => {
         router.push('/');
       }, 1000);
+    } else if (state.status === 'registered_success') {
+      console.log('✅ Registration successful, redirecting...');
+      setStatus('Registration successful! Redirecting...');
+      toast({
+        type: 'success',
+        description: 'Registration successful! Welcome to AskMe Chat AI.',
+      });
+
+      // Clear OIDC state
+      sessionStorage.removeItem('oidc_state');
+      localStorage.removeItem('oidc_state_backup');
+
+      // Use window.location.href for reliable redirect
+      try {
+        console.log('Redirecting to /register/success via window.location.href');
+        window.location.href = '/register/success';
+      } catch (err) {
+        console.error('Redirect failed:', err);
+      }
     } else if (state.status === 'failed') {
       console.error('❌ Login failed:', state.message);
       setStatus('Authentication failed');
@@ -58,122 +79,18 @@ export default function OIDCCallbackPage() {
     }
   }, [state, router]);
 
+  const processedRef = useRef(false);
+
   useEffect(() => {
+    // Prevent double execution
+    if (processedRef.current) return;
+
     const processCallback = async () => {
       try {
-        // ตรวจสอบ OIDC error ก่อน
-        // const oidcError = parseOIDCError(searchParams);
-        // if (oidcError) {
-        //   console.error('OIDC Error:', oidcError);
-        //   toast({
-        //     type: 'error',
-        //     description: oidcError.error_description || `Authentication error: ${oidcError.error}`,
-        //   });
-        //   router.push('/login');
-        //   return;
-        // }
+        // ... (rest of the logic)
+        processedRef.current = true;
 
-        // // ดึง code และ state จาก URL
-        // const code = searchParams.get('code');
-        // const state = searchParams.get('state');
-        // const session_state = searchParams.get('session_state');
-
-        // if (!code || !state) {
-        //   toast({
-        //     type: 'error',
-        //     description: 'Invalid callback parameters',
-        //   });
-        //   router.push('/login');
-        //   return;
-        // }
-
-        // // ตรวจสอบว่ามี session_state หรือไม่
-        // if (!session_state) {
-        //   console.warn('⚠️ No session_state found, proceeding anyway...');
-        // }
-
-        // // ดึง stored state จาก sessionStorage หรือสร้างใหม่
-        // const storedStateJson = sessionStorage.getItem('oidc_state');
-        // let storedState: OIDCAuthState;
-
-        // if (!storedStateJson) {
-        //   console.warn('⚠️ No stored state found in sessionStorage, creating fallback state');
-        //   // console.log('This usually means:');
-        //   // console.log('1. User opened callback URL directly');
-        //   // console.log('2. SessionStorage was cleared');
-        //   // console.log('3. Cross-origin issues');
-
-        //   // สร้าง fallback state จาก URL parameters
-        //   storedState = {
-        //     state: state || '',
-        //     nonce: 'fallback-nonce',
-        //     redirectUri: process.env.NEXT_PUBLIC_OIDC_CALLBACK_URL || 'https://chat.rmutl.ac.th/oidc/callback'
-        //   };
-
-        //   // console.log('🔧 Created fallback state:', storedState);
-
-        // } else {
-        //   try {
-        //     storedState = JSON.parse(storedStateJson);
-        //     console.log('✅ Found stored state in sessionStorage');
-        //   } catch (error) {
-        //     console.error('❌ Failed to parse stored state, creating fallback:', error);
-
-        //     // สร้าง fallback state เมื่อ JSON parse ล้มเหลว
-        //     storedState = {
-        //       state: state || '',
-        //       nonce: 'fallback-nonce', 
-        //       redirectUri: process.env.NEXT_PUBLIC_OIDC_CALLBACK_URL || 'https://chat.rmutl.ac.th/oidc/callback'
-        //     };
-
-        //     console.log('🔧 Created fallback state after parse error');
-        //   }
-        // }
-
-        // setStatus('Processing authentication with backend...');
-        // console.log('🔄 Starting OIDC backend authentication');
-
-        // // Debug environment variables
-        // debugOIDCEnvironment();
-
-        // // เรียกใช้ formAction ผ่าน transition
-        // console.log('🚀 Calling loginWithBackendAPI via formAction...');
-        // setStatus('Authenticating with backend API...');
-
-        // // แลกเปลี่ยน authorization code เป็น tokens
-        // console.log('🔄 Exchanging authorization code for tokens...');
-        // // const tokenData = await exchangeCodeForTokens(code, state, storedState);
-        // const response = await fetch('/api-i/oidc-token', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ code, state }),
-        // });
-        // const tokenData = await response.json();
-        // // console.log('✅ Token data received from exchangeCodeForTokens:', tokenData);
-
-        // if (!tokenData) {
-        //   console.error('❌ Token exchange failed');
-        //   toast({
-        //     type: 'error',
-        //     description: 'Failed to exchange authorization code. Please try again.',
-        //   });
-        //   router.push('/login');
-        //   return;
-        // }
-
-        // // ดึงข้อมูล user จาก access token
-        // const userInfo = await getUserInfo(tokenData.access_token);
-        // if (!userInfo) {
-        //   console.error('❌ Failed to get user info');
-        //   toast({
-        //     type: 'error',
-        //     description: 'Failed to retrieve user information. Please try again.',
-        //   });
-        //   router.push('/login');
-        //   return;
-        // }
-
-        // console.log('✅ User info retrieved:', userInfo);
+        // ...
         // call api/oidc-callback to get authorization URL
         const code = searchParams.get('code') || '';
         const state = searchParams.get('state') || '';
@@ -213,13 +130,6 @@ export default function OIDCCallbackPage() {
           formData.set('oidc_session_state', session_state);
         }
 
-        // console.log('🔐 Prepared FormData for backend:');
-        // console.log('   - Email: ', formData.get('email'));
-        // console.log('   - Password: ', formData.get('password'));
-        // console.log('   - OIDC Code: ', `${formData.get('oidc_code')?.toString().substring(0, 20)}...`);
-        // console.log('   - OIDC State: ', formData.get('oidc_state'));
-        // console.log('   - OIDC Session State: ', formData.get('oidc_session_state'));
-
         // เรียกใช้ formAction เพื่อ authenticate กับ backend
         startTransition(() => {
           formAction(formData);
@@ -245,6 +155,9 @@ export default function OIDCCallbackPage() {
       setIsProcessing(true);
     } else if (state.status === 'success') {
       setStatus('Authentication successful! Redirecting...');
+      setIsProcessing(false);
+    } else if (state.status === 'registered_success') {
+      setStatus('Registration successful! Redirecting...');
       setIsProcessing(false);
     } else if (state.status === 'failed') {
       setStatus('Authentication failed');
@@ -290,6 +203,7 @@ export default function OIDCCallbackPage() {
             style={{
               width: isPending ? '70%' :
                 state.status === 'success' ? '100%' :
+                  state.status === 'registered_success' ? '100%' :
                   state.status === 'failed' ? '100%' : '50%'
             }}
           />
