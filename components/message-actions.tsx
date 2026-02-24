@@ -46,6 +46,8 @@ export function PureMessageActions({
                   .filter((part) => part.type === 'text')
                   .map((part) => part.text ?? '')
                   .join('\n')
+                  .replace(/<[^>]*>/g, '')
+                  .replace(/\[\d+\]/g, '')
                   .trim();
 
                 if (!textFromParts) {
