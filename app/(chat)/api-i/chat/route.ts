@@ -357,12 +357,23 @@ export async function POST(request: Request) {
 
 
         // Extract attachments from message parts
+        const documentMimeTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+
         const attachments = message.parts
           ?.filter((p: any) => p.type === 'file')
-          .map((p: any) => ({
-            type: (p.mediaType?.startsWith('image/') ? 'image' : 'file') as 'image' | 'file',
-            url: p.url,
-          }));
+          .map((p: any) => {
+            let type: 'image' | 'file' | 'document' = 'file';
+            if (p.mediaType?.startsWith('image/')) {
+              type = 'image';
+            } else if (documentMimeTypes.includes(p.mediaType)) {
+              type = 'document';
+            }
+            return { type, url: p.url };
+          });
 
         const sessionResponse = await sendMessageToSession(
           finalSessionId,
