@@ -259,7 +259,7 @@ interface SessionMessageResponse {
  * Attachment for multimodal messages
  */
 export interface Attachment {
-    type: 'image' | 'file';
+    type: 'image' | 'file' | 'document';
     url: string;
 }
 

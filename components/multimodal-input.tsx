@@ -11,6 +11,7 @@ import {
   type Dispatch,
   type SetStateAction,
   type ChangeEvent,
+  type DragEvent,
   memo,
 } from 'react';
 import { toast } from 'sonner';
@@ -132,6 +133,41 @@ function PureMultimodalInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadQueue, setUploadQueue] = useState<Array<string>>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragCounterRef = useRef(0);
+
+  // Shared file validation logic
+  const validateFiles = useCallback((files: File[]): PendingAttachment[] => {
+    const validFiles: PendingAttachment[] = [];
+
+    for (const file of files) {
+      // Validate file type
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        const ext = file.name.toLowerCase().split('.').pop();
+        if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) {
+          toast.error(`ไฟล์ ${file.name} ไม่รองรับ กรุณาเลือกไฟล์ประเภท: ${ALLOWED_EXTENSIONS.join(', ')}`);
+          continue;
+        }
+      }
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 5MB กรุณาเลือกไฟล์ที่มีขนาดเล็กกว่า`);
+        continue;
+      }
+
+      // Create local preview URL
+      const localUrl = URL.createObjectURL(file);
+      validFiles.push({
+        url: localUrl,
+        name: file.name,
+        contentType: file.type,
+        file: file,
+      });
+    }
+
+    return validFiles;
+  }, []);
 
   const submitForm = useCallback(async () => {
     console.log('🚀 submitForm called with:', {
@@ -246,35 +282,7 @@ function PureMultimodalInput({
   const handleFileChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
-
-      // Validate and add files locally without uploading
-      const validFiles: PendingAttachment[] = [];
-
-      for (const file of files) {
-        // Validate file type
-        if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-          const ext = file.name.toLowerCase().split('.').pop();
-          if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) {
-            toast.error(`ไฟล์ ${file.name} ไม่รองรับ กรุณาเลือกไฟล์ประเภท: ${ALLOWED_EXTENSIONS.join(', ')}`);
-            continue;
-          }
-        }
-
-        // Validate file size
-        if (file.size > MAX_FILE_SIZE) {
-          toast.error(`ไฟล์ ${file.name} มีขนาดเกิน 2MB กรุณาเลือกไฟล์ที่มีขนาดเล็กกว่า`);
-          continue;
-        }
-
-        // Create local preview URL
-        const localUrl = URL.createObjectURL(file);
-        validFiles.push({
-          url: localUrl,
-          name: file.name,
-          contentType: file.type,
-          file: file, // Store the File object for later upload
-        });
-      }
+      const validFiles = validateFiles(files);
 
       if (validFiles.length > 0) {
         setAttachments((currentAttachments) => [
@@ -288,7 +296,85 @@ function PureMultimodalInput({
         event.target.value = '';
       }
     },
-    [setAttachments],
+    [setAttachments, validateFiles],
+  );
+
+  // Drag and drop handlers
+  const handleDragEnter = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounterRef.current += 1;
+    if (event.dataTransfer?.types.includes('Files')) {
+      setIsDragging(true);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
+  const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragCounterRef.current -= 1;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault();
+      event.stopPropagation();
+      dragCounterRef.current = 0;
+      setIsDragging(false);
+
+      const files = Array.from(event.dataTransfer?.files || []);
+      if (files.length === 0) return;
+
+      const validFiles = validateFiles(files);
+
+      if (validFiles.length > 0) {
+        setAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...validFiles,
+        ]);
+      }
+    },
+    [setAttachments, validateFiles],
+  );
+
+  // Paste file handler (Ctrl+V with copied files)
+  const handlePaste = useCallback(
+    (event: React.ClipboardEvent) => {
+      const items = event.clipboardData?.items;
+      if (!items) return;
+
+      const files: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) files.push(file);
+        }
+      }
+
+      if (files.length === 0) return;
+
+      // Prevent default paste behavior for files
+      event.preventDefault();
+
+      const validFiles = validateFiles(files);
+
+      if (validFiles.length > 0) {
+        setAttachments((currentAttachments) => [
+          ...currentAttachments,
+          ...validFiles,
+        ]);
+      }
+    },
+    [setAttachments, validateFiles],
   );
 
   const { isAtBottom, scrollToBottom } = useScrollToBottom();
@@ -347,100 +433,120 @@ function PureMultimodalInput({
         tabIndex={-1}
       />
 
-      {(attachments.length > 0 || uploadQueue.length > 0) && (
-        <div
-          data-testid="attachments-preview"
-          className="flex flex-row gap-2 overflow-x-scroll items-end"
-        >
-          {attachments.map((attachment) => (
-            <PreviewAttachment
-              key={attachment.url}
-              attachment={attachment}
-              onRemove={() => {
-                setAttachments((currentAttachments) =>
-                  currentAttachments.filter((a) => a.url !== attachment.url),
-                );
-                toast.success('ลบรูปภาพเรียบร้อยแล้ว');
-              }}
-            />
-          ))}
-
-          {uploadQueue.map((filename) => (
-            <PreviewAttachment
-              key={filename}
-              attachment={{
-                url: '',
-                name: filename,
-                contentType: '',
-              }}
-              isUploading={true}
-            />
-          ))}
-        </div>
-      )}
-
-      <Textarea
-        data-testid="multimodal-input"
-        ref={textareaRef}
-        placeholder={isExpired ? "บัญชีของคุณหมดอายุแล้ว กรุณาติดต่อผู้ดูแลระบบ" : (isCreditExhausted ? "เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ" : "Send a message...")}
-        value={input}
-        onChange={handleInput}
-        className={cx(
-          'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-sidebar pb-10 dark:border-zinc-700 shadow-lg',
-          isCreditExhausted && 'opacity-60 cursor-not-allowed',
-          className,
+      <div
+        className={cx('relative', isDragging && 'ring-2 ring-primary/50 rounded-2xl')}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Drop zone overlay */}
+        {isDragging && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center rounded-2xl bg-primary/5 dark:bg-primary/10 border-2 border-dashed border-primary/40 pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <PaperclipIcon size={24} />
+              <span className="text-sm font-medium">วางไฟล์ที่นี่</span>
+              <span className="text-xs text-muted-foreground">รองรับ: รูปภาพ, PDF, Word, Text</span>
+            </div>
+          </div>
         )}
-        rows={2}
-        autoFocus
-        disabled={isCreditExhausted}
-        onKeyDown={(event) => {
-          console.log(
-            '🎯 Textarea keydown:',
-            event.key,
-            'shiftKey:',
-            event.shiftKey,
-            'composing:',
-            event.nativeEvent.isComposing,
-          );
 
-          if (
-            event.key === 'Enter' &&
-            !event.shiftKey &&
-            !event.nativeEvent.isComposing
-          ) {
+        {(attachments.length > 0 || uploadQueue.length > 0) && (
+          <div
+            data-testid="attachments-preview"
+            className="flex flex-row gap-2 overflow-x-scroll items-end"
+          >
+            {attachments.map((attachment) => (
+              <PreviewAttachment
+                key={attachment.url}
+                attachment={attachment}
+                onRemove={() => {
+                  setAttachments((currentAttachments) =>
+                    currentAttachments.filter((a) => a.url !== attachment.url),
+                  );
+                  toast.success('ลบรูปภาพเรียบร้อยแล้ว');
+                }}
+              />
+            ))}
+
+            {uploadQueue.map((filename) => (
+              <PreviewAttachment
+                key={filename}
+                attachment={{
+                  url: '',
+                  name: filename,
+                  contentType: '',
+                }}
+                isUploading={true}
+              />
+            ))}
+          </div>
+        )}
+
+        <Textarea
+          data-testid="multimodal-input"
+          ref={textareaRef}
+          placeholder={isExpired ? "บัญชีของคุณหมดอายุแล้ว กรุณาติดต่อผู้ดูแลระบบ" : (isCreditExhausted ? "เครดิตหมดแล้ว กรุณาติดต่อผู้ดูแลระบบ" : "Send a message...")}
+          value={input}
+          onChange={handleInput}
+          className={cx(
+            'min-h-[24px] max-h-[calc(75dvh)] overflow-hidden resize-none rounded-2xl !text-base bg-sidebar pb-10 dark:border-zinc-700 shadow-lg',
+            isCreditExhausted && 'opacity-60 cursor-not-allowed',
+            className,
+          )}
+          rows={2}
+          autoFocus
+          disabled={isCreditExhausted}
+          onKeyDown={(event) => {
             console.log(
-              '✅ Enter pressed - preventing default and calling submitForm',
+              '🎯 Textarea keydown:',
+              event.key,
+              'shiftKey:',
+              event.shiftKey,
+              'composing:',
+              event.nativeEvent.isComposing,
             );
-            event.preventDefault();
 
-            if (status !== 'ready') {
-              toast.error('Please wait for the model to finish its response!');
-            } else if (input.trim().length === 0) {
-              toast.error('กรุณาพิมพ์ข้อความก่อนส่ง');
-            } else {
-              submitForm();
+            if (
+              event.key === 'Enter' &&
+              !event.shiftKey &&
+              !event.nativeEvent.isComposing
+            ) {
+              console.log(
+                '✅ Enter pressed - preventing default and calling submitForm',
+              );
+              event.preventDefault();
+
+              if (status !== 'ready') {
+                toast.error('Please wait for the model to finish its response!');
+              } else if (input.trim().length === 0) {
+                toast.error('กรุณาพิมพ์ข้อความก่อนส่ง');
+              } else {
+                submitForm();
+              }
             }
-          }
-        }}
-      />
+          }}
+          onPaste={handlePaste}
+        />
 
-      <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
-        <AttachmentsButton fileInputRef={fileInputRef} status={status} isCreditExhausted={isCreditExhausted} />
-      </div>
+        <div className="absolute bottom-0 p-2 w-fit flex flex-row justify-start">
+          <AttachmentsButton fileInputRef={fileInputRef} status={status} isCreditExhausted={isCreditExhausted} />
+        </div>
 
-      <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
-        {status === 'submitted' ? (
-          <StopButton stop={stop} setMessages={setMessages} />
-        ) : (
-          <SendButton
-            input={input}
-            submitForm={submitForm}
-            uploadQueue={uploadQueue}
-            attachments={attachments}
-            isUploading={isUploading}
-            isCreditExhausted={isCreditExhausted}
-          />
-        )}
+        <div className="absolute bottom-0 right-0 p-2 w-fit flex flex-row justify-end">
+          {status === 'submitted' ? (
+            <StopButton stop={stop} setMessages={setMessages} />
+          ) : (
+            <SendButton
+              input={input}
+              submitForm={submitForm}
+              uploadQueue={uploadQueue}
+              attachments={attachments}
+              isUploading={isUploading}
+              isCreditExhausted={isCreditExhausted}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
