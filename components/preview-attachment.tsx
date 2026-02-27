@@ -18,30 +18,6 @@ export const PreviewAttachment = ({
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isImage = contentType?.startsWith('image');
-  const isPdf = contentType === 'application/pdf';
-  const isWord = contentType === 'application/msword' || contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-
-  const getFileIcon = () => {
-    if (isPdf) {
-      return (
-        <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-red-500 font-bold text-xs bg-red-100 dark:bg-red-900/30 px-1.5 py-0.5 rounded">PDF</div>
-        </div>
-      );
-    }
-    if (isWord) {
-      return (
-        <div className="flex flex-col items-center justify-center gap-1">
-          <div className="text-blue-500 font-bold text-xs bg-blue-100 dark:bg-blue-900/30 px-1.5 py-0.5 rounded">DOC</div>
-        </div>
-      );
-    }
-    return (
-      <div className="flex flex-col items-center justify-center gap-1">
-        <div className="text-zinc-500 font-bold text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">FILE</div>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -59,7 +35,7 @@ export const PreviewAttachment = ({
                 onClick={() => setIsPreviewOpen(true)}
               />
             ) : (
-              getFileIcon()
+              <div className="" />
             )
           ) : (
             <div className="" />
