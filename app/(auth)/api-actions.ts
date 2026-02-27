@@ -120,11 +120,11 @@ export async function registerWithBackendAPI(
 ): Promise<RegisterActionState> {
   try {
     const rawData = {
-      username: formData.get('username') as string,
-      fullName: formData.get('fullName') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      confirmPassword: formData.get('confirmPassword') as string,
+      username: (formData.get('username') as string)?.trim(),
+      fullName: (formData.get('fullName') as string | null)?.trim() || '',
+      email: (formData.get('email') as string | null)?.trim() || '',
+      password: (formData.get('password') as string | null)?.trim() || '',
+      confirmPassword: (formData.get('confirmPassword') as string | null)?.trim() || '',
     };
 
     console.log('[Register] Attempting registration for:', rawData.email);
