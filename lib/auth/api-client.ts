@@ -41,7 +41,7 @@ export async function loginWithBackend(
   credentials: LoginRequest,
 ): Promise<LoginResponse> {
   try {
-    console.log('Login credentials:', credentials);
+    // console.log('Login credentials:', credentials);
     const body_login = {
       email: credentials.email,
       password: !credentials.isOIDC ? credentials.password : `Pa55w.rd${credentials.email.split('@')[0]}`

@@ -201,7 +201,7 @@ export const logApiResponse = (
     if (response) {
       try {
         // Try to pretty print JSON if possible
-        console.dir(response, { depth: null, colors: true });
+        // console.dir(response, { depth: null, colors: true });
       } catch (e) {
         console.log(response);
       }

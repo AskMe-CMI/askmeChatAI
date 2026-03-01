@@ -34,13 +34,13 @@ export async function GET() {
         });
 
         // Debug: Log the response
-        console.log('Backend Response:', {
-            success: response.success,
-            status: response.status,
-            url: response.url,
-            data: response.data,
-            error: response.error
-        });
+        // console.log('Backend Response:', {
+        //     success: response.success,
+        //     status: response.status,
+        //     url: response.url,
+        //     data: response.data,
+        //     error: response.error
+        // });
         console.log('=== End Models API Debug ===');
 
         if (!response.success) {
