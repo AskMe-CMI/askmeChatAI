@@ -47,7 +47,7 @@ export async function signInWithAPI(
     cookieStore.set(COOKIE_NAME, result.token, COOKIE_OPTIONS);
 
     // console.log('Login successful, token using:', result.token);
-    console.log('Login successful!');
+    // console.log('Login successful!');
     return {
       success: true,
     };
