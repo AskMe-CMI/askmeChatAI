@@ -29,7 +29,9 @@ interface GoogleAuthData {
     raw_id_token_claims: any;
 }
 
-export default function LoginGooglePage() {
+import { Suspense } from 'react';
+
+function LoginContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -238,6 +240,18 @@ export default function LoginGooglePage() {
                 )}
             </div>
         </div>
+    );
+}
+
+export default function LoginGooglePage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-dvh w-screen items-center justify-center bg-background">
+                <p>Loading...</p>
+            </div>
+        }>
+            <LoginContent />
+        </Suspense>
     );
 }
 
