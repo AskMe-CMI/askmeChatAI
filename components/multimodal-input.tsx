@@ -32,15 +32,18 @@ import { SuggestedActions } from './suggested-actions';
 import { uploadFileAction } from '@/app/(chat)/actions/upload';
 
 // File validation constants
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = [
   'image/jpeg',
   'image/png',
   'image/gif',
   'image/webp',
   'text/plain',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
-const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.txt'];
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.txt', '.pdf', '.doc', '.docx'];
 
 // Extended attachment type that includes pending file for upload
 export interface PendingAttachment extends Attachment {
@@ -425,7 +428,7 @@ function PureMultimodalInput({
         className="fixed -top-4 -left-4 size-0.5 opacity-0 pointer-events-none"
         ref={fileInputRef}
         multiple
-        accept="image/jpeg,image/png,image/gif,image/webp,text/plain,.txt"
+        accept="image/jpeg,image/png,image/gif,image/webp,text/plain,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         onChange={handleFileChange}
         tabIndex={-1}
       />

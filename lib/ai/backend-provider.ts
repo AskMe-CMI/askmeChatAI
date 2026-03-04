@@ -299,7 +299,13 @@ export async function sendMessageToSession(
         if (attachments && attachments.length > 0) {
             body.attachments = attachments;
         }
-
+        // console.log('📤 Sending message to Backend session:', {
+        //     sessionId,
+        //     contentLength: content.length,
+        //     model: model || '(session default)',
+        //     attachmentsCount: attachments?.length || 0,
+        //     url: `${BACKEND_API_URL}/chat-history/sessions/${sessionId}/messages`
+        // });
         const response = await fetch(`${BACKEND_API_URL}/chat-history/sessions/${sessionId}/messages`, {
             method: 'POST',
             headers: {
