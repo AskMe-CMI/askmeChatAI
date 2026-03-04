@@ -12,7 +12,7 @@ const ClientMsalProvider = dynamic(() => import('@/components/ClientMsalProvider
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ClientMsalProvider>
+    // <ClientMsalProvider>
       <ThemeProvider
         attribute="class"
         defaultTheme="system"
@@ -22,6 +22,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <Toaster position="top-center" />
         {children}
       </ThemeProvider>
-    </ClientMsalProvider>
+    // </ClientMsalProvider>
   );
 }

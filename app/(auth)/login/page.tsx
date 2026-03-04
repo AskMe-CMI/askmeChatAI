@@ -105,19 +105,19 @@ export default function LoginPage() {
           </div>
           {/* {process.env.NEXT_PUBLIC_ALLOW_LOCAL_LOGIN.toLowerCase() !== 'false' && ( */}
           <>
-            <AuthForm action={handleSubmit} defaultEmail={email}>
+            {/* <AuthForm action={handleSubmit} defaultEmail={email}>
               <SubmitButton isSuccessful={state.status === 'success'}>
                 Login
               </SubmitButton>
-            </AuthForm>
+            </AuthForm> */}
             {/* <div className="flex flex-col px-4 sm:px-16">
                 <Separator className="bg-zinc-600" />
               </div> */}
           </>
           {/* )} */}
           {/* <div className="flex flex-col gap-3 px-4 sm:px-16"> */}
-          {/* MSAL button */}
-          <div className="px-4 sm:px-16">
+          {/* GOOGLE button */}
+          {/* <div className="px-4 sm:px-16">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
@@ -126,7 +126,7 @@ export default function LoginPage() {
                 <span className="bg-background px-2 text-muted-foreground">Or</span>
               </div>
             </div>
-          </div>
+          </div> */}
           <div className="px-4 sm:px-16">
             <Button
               onClick={async () => {
@@ -142,7 +142,7 @@ export default function LoginPage() {
               }}
               disabled={isLoading}
               variant="outline"
-              className="w-full flex items-center justify-center gap-2 text-zinc-600"
+              className="w-full flex items-center justify-center gap-2 text-zinc-500 hover:text-zinc-400 bg-white hover:bg-white/90 dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >
               {isLoading ? (
                 <LoaderIcon size={16} />

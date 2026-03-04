@@ -1,7 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState, useActionState, useTransition, useRef } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { toast } from '@/components/toast';
+import { LoaderIcon } from '@/components/icons';
+import { loginWithBackendAPI, type LoginActionState } from '@/app/(auth)/api-actions-oidc-mock';
 
 interface GoogleAuthData {
     tokenData: {
@@ -27,16 +30,29 @@ interface GoogleAuthData {
 }
 
 export default function LoginGooglePage() {
+    const router = useRouter();
     const searchParams = useSearchParams();
 
     const [authData, setAuthData] = useState<GoogleAuthData | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [status, setStatus] = useState<string>('Processing authentication...');
+    const [isProcessing, setIsProcessing] = useState(true);
+
+    const [state, formAction] = useActionState<LoginActionState, FormData>(
+        loginWithBackendAPI,
+        { status: 'idle' },
+    );
+    const [isPending, startTransition] = useTransition();
+
+    const processedRef = useRef(false);
 
     useEffect(() => {
         // Check for error from callback
         const errorParam = searchParams.get('error');
         if (errorParam) {
             setError(decodeURIComponent(errorParam));
+            setIsProcessing(false);
+            return;
         }
 
         // Check for success - read data from cookie
@@ -49,107 +65,175 @@ export default function LoginGooglePage() {
                     setAuthData(decoded);
                 } catch (e) {
                     setError('Failed to parse auth data from cookie');
+                    setIsProcessing(false);
                 }
             }
         }
     }, [searchParams]);
 
+    // Handle the backend API login
+    useEffect(() => {
+        if (!authData || !authData.userInfo || !authData.userInfo.email || processedRef.current) return;
+
+        const processBackendLogin = async () => {
+            processedRef.current = true;
+            try {
+                const formData = new FormData();
+                formData.set('email', authData.userInfo.email);
+                formData.set('password', 'oidc-authenticated');
+
+                // Set Google code and state if present in url
+                formData.set('oidc_code', searchParams.get('code') || 'google-auth');
+                formData.set('oidc_state', searchParams.get('state') || 'google-state');
+
+                startTransition(() => {
+                    formAction(formData);
+                });
+            } catch (err) {
+                console.error('❌ Callback processing error:', err);
+                toast({
+                    type: 'error',
+                    description: 'Authentication failed. Please try again.',
+                });
+                router.push('/login');
+            }
+        };
+
+        processBackendLogin();
+    }, [authData, formAction, startTransition, router, searchParams]);
+
+    // Listen to formAction state changes
+    useEffect(() => {
+        if (state.status === 'success') {
+            console.log('✅ Login successful, redirecting...');
+            setStatus('Authentication successful! Redirecting...');
+            toast({
+                type: 'success',
+                description: 'Authentication successful! Welcome to AskMe Chat AI.',
+            });
+
+            // Clear google Auth cookie like OIDC did
+            document.cookie = 'google_auth_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+            setTimeout(() => {
+                router.push('/');
+            }, 1000);
+        } else if (state.status === 'registered_success') {
+            console.log('✅ Registration successful, redirecting...');
+            setStatus('Registration successful! Redirecting...');
+            toast({
+                type: 'success',
+                description: 'Registration successful! Welcome to AskMe Chat AI.',
+            });
+
+            document.cookie = 'google_auth_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+            try {
+                window.location.href = '/register/success';
+            } catch (err) {
+                console.error('Redirect failed:', err);
+            }
+        } else if (state.status === 'failed') {
+            console.error('❌ Login failed:', state.message);
+            setStatus('Authentication failed');
+            toast({
+                type: 'error',
+                description: state.message || 'Authentication failed. Please try again.',
+            });
+
+            setTimeout(() => {
+                router.push('/login');
+            }, 2000);
+        }
+    }, [state, router]);
+
+    // Update status based on pending
+    useEffect(() => {
+        if (isPending) {
+            setStatus('Authenticating with backend...');
+            setIsProcessing(true);
+        } else if (state.status === 'success' || state.status === 'registered_success' || state.status === 'failed') {
+            setIsProcessing(false);
+        }
+    }, [isPending, state.status]);
+
     const handleLogout = () => {
-        // Clear the auth cookie
         document.cookie = 'google_auth_data=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         setAuthData(null);
         setError(null);
-        // Redirect back to login page
         window.location.href = '/login';
     };
 
     return (
-        <div className="min-h-screen flex justify-center items-start pt-10 px-4 bg-background text-foreground">
-            <div className="w-full max-w-2xl flex flex-col gap-5">
-                <h1 className="text-2xl font-bold text-center">🔐 Google Login Test</h1>
-                <p className="text-sm text-muted-foreground text-center">ทดสอบ Google OAuth2 Login Flow</p>
-
-                {/* Back to Login link when no data */}
-                {!authData && !error && (
-                    <a href="/login" className="text-center text-sm text-primary hover:underline">← Back to Login</a>
-                )}
-
+        <div className="flex h-dvh w-screen items-center justify-center bg-background">
+            <div className="w-full max-w-md flex flex-col items-center gap-6 p-8">
                 {/* Error Display */}
                 {error && (
-                    <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
+                    <div className="bg-destructive/10 border border-destructive rounded-lg p-4 w-full text-center">
                         <h3 className="text-destructive font-semibold mb-2">❌ Error</h3>
-                        <pre className="bg-background rounded-md p-3 text-xs text-destructive overflow-auto whitespace-pre-wrap break-all">{error}</pre>
+                        <p className="text-sm text-destructive break-all">{error}</p>
+                        <button
+                            onClick={handleLogout}
+                            className="mt-4 px-4 py-2 border border-destructive rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 text-sm"
+                        >
+                            Back to Login
+                        </button>
                     </div>
                 )}
 
-                {/* Success - User Info */}
-                {authData && (
+                {!error && (
                     <>
-                        {/* User Card */}
-                        {authData.userInfo && !authData.userInfo.error && (
-                            <div className="bg-green-500/10 border border-green-500 rounded-lg p-5">
-                                <h3 className="font-semibold text-green-600 dark:text-green-400 mb-3">✅ Login สำเร็จ!</h3>
-                                <div className="flex items-center gap-4">
-                                    {authData.userInfo.picture && (
-                                        <img
-                                            src={authData.userInfo.picture}
-                                            alt="Profile"
-                                            className="w-16 h-16 rounded-full border-2 border-green-500"
-                                            referrerPolicy="no-referrer"
-                                        />
-                                    )}
-                                    <div>
-                                        <p className="text-lg font-semibold">{authData.userInfo.name}</p>
-                                        <p className="text-sm text-muted-foreground">{authData.userInfo.email}</p>
-                                        <p className="text-xs text-muted-foreground">
-                                            Verified: {authData.userInfo.email_verified ? '✅' : '❌'}
-                                        </p>
-                                    </div>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            {isProcessing && <LoaderIcon size={24} />}
+                            <h2 className="text-xl font-semibold dark:text-zinc-50">
+                                Authenticating with Google...
+                            </h2>
+                        </div>
+
+                        <div className="text-center">
+                            <p className="text-sm text-gray-500 dark:text-zinc-400">
+                                {status}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-2">
+                                Processing your Google authentication
+                            </p>
+
+                            {state.status === 'failed' && state.message && (
+                                <p className="text-xs text-red-500 mt-2">
+                                    Error: {state.message}
+                                </p>
+                            )}
+
+                            {isPending && (
+                                <p className="text-xs text-blue-500 mt-2">
+                                    Contacting backend server...
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-in-out"
+                                style={{
+                                    width: isPending ? '70%' :
+                                        state.status === 'success' ? '100%' :
+                                        state.status === 'registered_success' ? '100%' :
+                                        state.status === 'failed' ? '100%' : '50%'
+                                }}
+                            />
+                        </div>
+
+                        <div className="text-center">
+                            {authData?.userInfo?.email && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Logged in as: {authData.userInfo.email}
+                                </p>
+                            )}
+                            <div className="text-xs text-gray-500 mt-2">
+                                <p>FormAction Status: {state.status}</p>
+                                <p>Is Pending: {isPending ? 'Yes' : 'No'}</p>
                             </div>
-                        )}
-
-                        {/* Token Data */}
-                        <div className="bg-card border border-border rounded-lg p-4">
-                            <h3 className="font-semibold text-foreground mb-2">📦 Token Data</h3>
-                            <pre className="bg-muted rounded-md p-3 text-xs text-primary overflow-auto whitespace-pre-wrap break-all leading-relaxed">
-                                {JSON.stringify(authData.tokenData, null, 2)}
-                            </pre>
                         </div>
-
-                        {/* User Info Raw */}
-                        <div className="bg-card border border-border rounded-lg p-4">
-                            <h3 className="font-semibold text-foreground mb-2">👤 User Info (from Google API)</h3>
-                            <pre className="bg-muted rounded-md p-3 text-xs text-primary overflow-auto whitespace-pre-wrap break-all leading-relaxed">
-                                {JSON.stringify(authData.userInfo, null, 2)}
-                            </pre>
-                        </div>
-
-                        {/* ID Token Claims */}
-                        {authData.raw_id_token_claims && (
-                            <div className="bg-card border border-border rounded-lg p-4">
-                                <h3 className="font-semibold text-foreground mb-2">🔑 ID Token Claims (decoded JWT)</h3>
-                                <pre className="bg-muted rounded-md p-3 text-xs text-primary overflow-auto whitespace-pre-wrap break-all leading-relaxed">
-                                    {JSON.stringify(authData.raw_id_token_claims, null, 2)}
-                                </pre>
-                            </div>
-                        )}
-
-                        {/* Full Raw Response */}
-                        <div className="bg-card border border-border rounded-lg p-4">
-                            <h3 className="font-semibold text-foreground mb-2">📋 Full Response (ข้อมูลทั้งหมด)</h3>
-                            <pre className="bg-muted rounded-md p-3 text-xs text-primary overflow-auto whitespace-pre-wrap break-all leading-relaxed">
-                                {JSON.stringify(authData, null, 2)}
-                            </pre>
-                        </div>
-
-                        {/* Logout Button */}
-                        <button
-                            onClick={handleLogout}
-                            className="w-full py-3 px-6 text-sm font-semibold border border-destructive rounded-md bg-destructive/10 text-destructive hover:bg-destructive/20 cursor-pointer transition-colors"
-                        >
-                            🚪 Logout
-                        </button>
                     </>
                 )}
             </div>
@@ -163,7 +247,6 @@ function getCookie(name: string): string | null {
     return match ? decodeURIComponent(match[2]) : null;
 }
 
-// Decode base64 with proper UTF-8 support (for Thai and other non-ASCII characters)
 function base64DecodeUtf8(base64: string): string {
     const binaryString = atob(base64);
     const bytes = Uint8Array.from(binaryString, (c) => c.charCodeAt(0));

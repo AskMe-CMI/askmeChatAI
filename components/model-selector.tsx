@@ -76,6 +76,23 @@ export function ModelSelector({
           if (data.data && Array.isArray(data.data)) {
             const chatModels = data.data.map(convertToCharModel);
             setModels(chatModels);
+
+            // Auto-select the first model if current selection is invalid
+            const isCurrentValid = chatModels.some((m: ChatModel) => m.id === selectedModelId);
+            if (!isCurrentValid && chatModels.length > 0) {
+              const firstModelId = chatModels[0].id;
+
+              startTransition(() => {
+                setOptimisticModelId(firstModelId);
+              });
+
+              await saveChatModelAsCookie(firstModelId);
+
+              if (onModelChange) {
+                console.log('✅ Auto-selecting first model calling onModelChange callback');
+                onModelChange(firstModelId);
+              }
+            }
           }
         }
       } catch (error) {
